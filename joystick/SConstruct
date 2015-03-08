@@ -1,0 +1,58 @@
+import os
+
+# Schedule the device to be flashed with the compiled code if the user
+#  specified "flash=1" on the command line
+flash = False
+
+for (key,val) in ARGLIST:
+  if key == "flash" and val == "1":
+    flash = True
+
+def finish( target, source, env ):
+    if flash:
+      print("\nFlashing hex to device...\n")
+      os.system("python ../bootloader/software/bootloadercmd.py -i joystick.hex -w")
+
+# Specify the build chain and options
+env = Environment(tools = ['gcc', 'gnulink', 'ar', 'zip'], 
+                  PIC = '24FJ128GB206', 
+                  CC = 'xc16-gcc', 
+                  PROGSUFFIX = '.cof', 
+                  CFLAGS = '-g -omf=coff -x c -mcpu=$PIC', 
+                  LINKFLAGS = '-omf=coff -mcpu=$PIC -Wl,--script="app_p24FJ128GB206.gld"', 
+                  CPPPATH = '../lib')
+
+# Change compiler path based on detected operating system
+if os.name == "nt":
+  print("scons: Windows system detected")
+  env.PrependENVPath('PATH', 'C:\\Program Files (x86)\\Microchip\\xc16\\v1.24\\bin')
+elif os.name == "posix":
+  print("scons: Linux system detected")
+  env.PrependENVPath('PATH', '/opt/microchip/xc16/v1.22/bin')
+else:
+  print("scons: OS not recognized - check the SConstruct file.")
+  exit()
+
+# Perform the compilation!
+bin2hex = Builder(action = 'xc16-bin2hex $SOURCE -omf=coff',
+                  suffix = 'hex', 
+                  src_suffix = 'cof')
+env.Append(BUILDERS = {'Hex' : bin2hex})
+list = Builder(action = 'xc16-objdump -S -D -omf=coff $SOURCE > $TARGET', 
+               suffix = 'lst', 
+               src_suffix = 'cof')
+env.Append(BUILDERS = {'List' : list})
+
+env.Program('joystick', ['joystick.c',
+                      '../lib/timer.c',
+                      '../lib/ui.c',
+                      '../lib/pin.c',
+                      '../lib/oc.c',
+                      '../lib/uart.c',
+                      '../lib/descriptors.c'])
+hex = env.Hex('joystick')
+lst = env.List('joystick')
+
+finish_command = Command( 'finish', [], finish )
+Depends(finish_command, lst)
+Depends(finish_command, hex)
