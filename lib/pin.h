@@ -57,5 +57,6 @@ void pin_clear(_PIN *self);
 void pin_toggle(_PIN *self);
 void pin_write(_PIN *self, uint16_t val);
 uint16_t pin_read(_PIN *self);
+void setup_motor_shield();
 
 #endif

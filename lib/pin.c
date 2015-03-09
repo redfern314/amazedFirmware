@@ -178,3 +178,17 @@ uint16_t pin_read(_PIN *self) {
         return 0xFFFF;
 }
 
+void setup_motor_shield() {
+    // Set various enables
+    pin_digitalOut(&D[2]);
+    pin_digitalOut(&D[3]);
+    pin_digitalOut(&D[4]);
+    pin_digitalOut(&D[5]);
+    pin_digitalOut(&D[6]);
+    pin_set(&D[2]);
+    pin_clear(&D[3]);
+    pin_set(&D[4]);
+    // Turn the motors off
+    pin_clear(&D[5]);
+    pin_clear(&D[6]);
+}
