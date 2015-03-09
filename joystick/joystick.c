@@ -18,7 +18,7 @@
 #define JOYSTICK_MIN            805
 #define JOYSTICK_MAX            940
 #define JOYSTICK_MID            875
-#define JOYSTICK_TOL            7
+#define JOYSTICK_TOL            8
 
 int motorDirection = 1;
 int prevMotorDirection = 0;
@@ -109,7 +109,7 @@ int16_t main(void) {
     pin_analogIn(&A[1]); // Back EMF from motor (A1)
 
     // PWM setup
-    oc_pwm(&oc1,&D[6],&timer3,PWM_FREQ,motorDutyCycle);
+    oc_pwm(&oc1,&D[6],&timer3,PWM_FREQ,0);
 
     pin_analogIn(&A[5]); // Reading of the joystick
 
