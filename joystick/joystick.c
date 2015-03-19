@@ -34,7 +34,7 @@ void readJoystick() {
     sum += data;
 
     if (sumnum >= 8) {
-        uint16_t avg = sum>>3;
+        uint16_t avg = sum >> 3;  // Divides by 8
         if (avg > (JOYSTICK_MID + JOYSTICK_TOL)) {
             motorDirection = -1;
             printf("Driving left\r\n");
@@ -109,7 +109,7 @@ int16_t main(void) {
     pin_analogIn(&A[1]); // Back EMF from motor (A1)
 
     // PWM setup
-    oc_pwm(&oc1,&D[6],&timer3,PWM_FREQ,0);
+    oc_pwm(&oc1, &D[6], &timer3, PWM_FREQ, 0);
 
     pin_analogIn(&A[5]); // Reading of the joystick
 
