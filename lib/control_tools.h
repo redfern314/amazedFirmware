@@ -15,20 +15,20 @@
 // X-Y-Z tracker
 #define X_PIN_IN            4    // Analog pin
 #define Y_PIN_IN            3    // Analog pin
-#define KNOB_PIN_IN         2    // Analog pin
+#define KNOB_PIN_IN         5    // Analog pin
 #define TRACK_POT_FREQ      100  // 100 Hz.
 #define JOYSTICK_MIN        805  // Analog voltage
 #define JOYSTICK_MAX        940  // Analog voltage
 #define JOYSTICK_MID        875  // Analog voltage
-#define JOYSTICK_TOL        8    // Analog voltage
+#define JOYSTICK_TOL        25   // Analog voltage
 #define JOYSTICK_ALPHA      4    // Part of an exponential moving average
                                  // http://stackoverflow.com/a/10990656
                                  // NOTE: Defined here as 4 bits (16) instead
                                  // of 1/16 to avoid float division
-#define KNOB_MIN            1    // Analog voltage
-#define KNOB_MAX            3    // Analog voltage
-#define KNOB_MID            2    // Analog voltage
-#define KNOB_TOL            1    // Analog voltage
+#define KNOB_MIN            0    // Analog voltage
+#define KNOB_MAX            940  // Analog voltage
+#define KNOB_MID            470  // Analog voltage
+#define KNOB_TOL            200  // Analog voltage
 #define KNOB_ALPHA          2    // Part of an exponential moving average
                                  // http://stackoverflow.com/a/10990656
                                  // NOTE: Defined here as 2 bits (4_ instead of

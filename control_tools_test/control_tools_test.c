@@ -26,7 +26,7 @@ void setup() {
     init_pot_tracking();
 	timer_every(&timer3, 1.0 / TRACK_POT_FREQ, track_pots);    
 
-    timer_setPeriod(&timer1, 0.2);
+    timer_setPeriod(&timer1, 0.1);
     timer_start(&timer1);
 }
 
@@ -40,11 +40,12 @@ int16_t main(void) {
 
         if (timer_flag(&timer1)) {
             timer_lower(&timer1);
-            printf("Number of coins seen so far: %d\n", get_coins());
+            // printf("Number of coins seen so far: %d\n", get_coins());
             printf("Control inputs:\n");
             printf("\tX: %d\n", get_x());
             printf("\tY: %d\n", get_y());
             printf("\tZ: %d\n", get_z());
+            // printf("X: %d\tY: %d\n", get_x(), get_y());
         }
     }
 }
