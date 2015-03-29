@@ -10,7 +10,12 @@
 
 // Tests out the control_tools library
 
-int coins_read;
+int coins_read = 0;
+
+void accept_coin() {
+    printf("Saw a new coin!\n");
+    coins_read++;
+}
 
 void setup() {
 	init_clock();
@@ -20,8 +25,7 @@ void setup() {
     init_ui();
     led_on(&led1); led_on(&led2); led_on(&led3);
 
-    init_coin_tracking();
-    timer_every(&timer2, 1.0 / TRACK_COIN_FREQ, track_coins);
+    init_coin_tracking(&accept_coin);
 
     init_pot_tracking();
 	timer_every(&timer3, 1.0 / TRACK_POT_FREQ, track_pots);    
@@ -34,10 +38,6 @@ int16_t main(void) {
     setup();
 
     while (1) {
-        if (get_new_coin() > 0) {
-            printf("Saw a new coin!\n");
-        }
-
         if (timer_flag(&timer1)) {
             timer_lower(&timer1);
             // printf("Number of coins seen so far: %d\n", get_coins());
