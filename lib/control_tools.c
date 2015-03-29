@@ -7,44 +7,28 @@
 #include "pin.h"
 
 
-// Coin tracker
-_COIN_TRACKER CoinTracker;
+// Coin tracker callback
+void (*coin_callback)(void);
 
-int get_new_coin() {
-    if (CoinTracker.new_coin > 0) {
-        CoinTracker.new_coin -= 1;
-        return 1;
-    }
-    return 0;
+void init_coin_tracking(void (*callback)(void)) {
+    coin_callback = callback;
+    pin_digitalIn(&D[COIN_READ_PIN]);
+
+    // Configure an interrupt on the coin input pin
+    __builtin_write_OSCCONL(OSCCON&0xBF);
+    RPINR0bits.INT1R = 22; // equivalent to RPINR0 |= (22 << 8), sets INT1 to RP22 / D13
+    __builtin_write_OSCCONL(OSCCON|0x40);
+
+    INTCON2bits.INT1EP = 0; // interrupt fires on pos edge
+    IEC1bits.INT1IE = 1; // enable external interrupt 1
+    IFS1bits.INT1IF = 0; // disable interrupt flag
 }
 
-int get_coins() {
-    return CoinTracker.total_coin_count;
+// Interrupt handler for INT1
+void __attribute__((interrupt, auto_psv)) _INT1Interrupt(void) {
+    IFS1bits.INT1IF = 0; // disable interrupt flag
+    coin_callback();
 }
-
-void init_coin_tracking() {
-    CoinTracker.coin_in_slot = 0;
-    CoinTracker.new_coin = 0;
-    CoinTracker.total_coin_count = 0;
-    pin_analogIn(&A[COIN_READ_PIN]);
-    CoinTracker.voltage = pin_read(&A[COIN_READ_PIN]) >> 6;
-}
-
-void track_coins(_TIMER *self) {
-    // Get voltage output by coin tracker
-    CoinTracker.voltage = (int) (pin_read(&A[COIN_READ_PIN]) >> 6);
-
-    if (CoinTracker.voltage > COIN_VOLTAGE_LEVEL) {
-        CoinTracker.coin_in_slot = 1;
-    } else if (CoinTracker.voltage < COIN_VOLTAGE_LEVEL) {
-        if (CoinTracker.coin_in_slot == 1) {
-            CoinTracker.new_coin += 1;
-            CoinTracker.total_coin_count += 1;
-        }
-        CoinTracker.coin_in_slot = 0;
-    }
-}
-
 
 // Joystick tracker
 _POTENTIOMETER_TRACKER PotTracker;
