@@ -89,10 +89,13 @@ void setup() {
     init_timer();
     init_uart();
     init_ui();
-    led_on(&led1); led_on(&led2); led_on(&led3);
+
+    led_on(&led1);
 
     init_coin_tracking(&accept_coin);
     while (coins_read == 0) { } // wait until a coin is inserted
+
+    led_on(&led3);
 
     setup_motor_shield();
 
