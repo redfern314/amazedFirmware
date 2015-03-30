@@ -15,7 +15,19 @@ def setup_PIC_env():
                     CFLAGS = '-g -omf=coff -x c -mcpu=$PIC', 
                     LINKFLAGS = '-omf=coff -mcpu=$PIC -Wl,--script="app_p24FJ128GB206.gld"', 
                     CPPPATH = '../lib')
-  env.PrependENVPath('PATH', '/opt/microchip/xc16/v1.24/bin/')
+  
+  # Change compiler path based on detected operating system
+  if os.name == "nt":
+    print("scons: Windows system detected")
+    env.PrependENVPath('PATH', 'C:\\Program Files (x86)\\Microchip\\xc16\\v1.24\\bin')
+  elif os.name == "posix":
+    print("scons: Linux system detected")
+    env.PrependENVPath('PATH', '/opt/microchip/xc16/v1.24/bin')
+    env.PrependENVPath('PATH', '/opt/microchip/xc16/v1.22/bin')
+  else:
+    print("scons: OS not recognized - check the SConstruct file.")
+    exit()
+
   bin2hex = Builder(action = 'xc16-bin2hex $SOURCE -omf=coff',
                     suffix = 'hex', 
                     src_suffix = 'cof')

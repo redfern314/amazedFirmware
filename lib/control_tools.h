@@ -34,6 +34,8 @@
                                  // NOTE: Defined here as 2 bits (4_ instead of
                                  // 1/4 to avoid float division
 
+#define Z_STEP_SIZE         4681 // (65535 - 1) / 14
+
 
 // Coin tracker
 typedef struct _COIN_TRACKER {

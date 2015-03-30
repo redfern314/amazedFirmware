@@ -135,14 +135,3 @@ void track_pots(_TIMER *self) {
     PotTracker.z_accumulator = (temp >> KNOB_ALPHA) +
                                ((PotTracker.z_accumulator * ((1 << KNOB_ALPHA) - 1)) >> KNOB_ALPHA);
 }
-
-void init_z_axis() {
-    pin_digitalOut(&D[12]);
-    oc_servo(&oc1, &D[12], &timer2, 20E-3, 1E-3, 2E-3, 0);
-}
-
-void set_z(_TIMER *self) {
-    int z = get_z();
-
-    pin_write(&D[12],z*4681);
-}
