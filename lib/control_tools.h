@@ -8,7 +8,9 @@
 
 
 // Coin tracker
-#define COIN_READ_PIN       13   // Digital pin
+#define COIN_READ_PIN       5    // Analog pin
+#define TRACK_COIN_FREQ     20   // 20 Hz. Too fast gives false positives
+#define COIN_VOLTAGE_LEVEL  40   // Voltage level that indicates coin
 
 // X-Y-Z tracker
 #define X_PIN_IN            4    // Analog pin
@@ -32,7 +34,20 @@
                                  // NOTE: Defined here as 2 bits (4_ instead of
                                  // 1/4 to avoid float division
 
-void init_coin_tracking(void (*callback)(void));
+
+// Coin tracker
+typedef struct _COIN_TRACKER {
+    int voltage;
+    int coin_in_slot;
+    int new_coin;
+    int total_coin_count;
+} _COIN_TRACKER;
+
+void init_coin_tracking();
+int get_new_coin();
+int get_coins();
+void track_coins(_TIMER *self);
+
 
 // Potentiometer tracker
 typedef struct _POTENTIOMETER_TRACKER {
@@ -47,5 +62,7 @@ int get_y();
 int get_z();
 void track_pots();
 
+void init_z_axis();
+void set_z(_TIMER *self);
 
 #endif
