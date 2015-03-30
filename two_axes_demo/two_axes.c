@@ -55,13 +55,13 @@ void setMotor() {
     if (motorDirection != prevMotorDirection || motorDutyCycle != prevDutyCycle) {
         oc_free(&oc2);
 
-        if (motorDirection == 10) {
+        if (motorDirection == -10) {
             // Config PWM for IN1 (D6)
             oc_pwm(&oc2,&D[6],&timer2,PWM_FREQ,motorDutyCycle);
 
             // Set IN2 (D5) low
             pin_clear(&D[5]);
-        } else if (motorDirection == -10) {
+        } else if (motorDirection == 10) {
             // Config PWM for IN2 (D5)
             oc_pwm(&oc2,&D[5],&timer2,PWM_FREQ,motorDutyCycle);
 
