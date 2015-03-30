@@ -5,6 +5,7 @@
 #include "common.h"
 #include "control_tools.h"
 #include "pin.h"
+#include "oc.h"
 
 
 // Coin tracker callback
@@ -65,17 +66,46 @@ int get_y() {
 
 int get_z() {
     int z = PotTracker.z_accumulator;
-    if (z < KNOB_MID + KNOB_TOL && z > KNOB_MID - KNOB_TOL) {
-        // Knob is in the central deadband
+    if (z <= 67) {
         return 0;
-    } else if (z >= KNOB_MID + KNOB_TOL) {
-        // Knob is full on (consider making variable map)
+    } else if (z <= 134) {
+        return 1;
+    } else if (z <= 201) {
+        return 2;
+    } else if (z <= 268) {
+        return 3;
+    } else if (z <= 335) {
+        return 4;
+    } else if (z <= 402) {
+        return 5;
+    } else if (z <= 469) {
+        return 6;
+    } else if (z <= 536) {
+        return 7;
+    } else if (z <= 603) {
+        return 8;
+    } else if (z <= 670) {
+        return 9;
+    } else if (z <= 737) {
         return 10;
-    } else if (z <= KNOB_MID - KNOB_TOL) {
-        // Joystick is full off (consider making variable map)
-        return -10;
+    } else if (z <= 804) {
+        return 11;
+    } else if (z <= 871) {
+        return 12;
+    } else if (z <= KNOB_MAX) {
+        return 13;
     }
-    return 0;  // Catch case
+    // if (z < KNOB_MID + KNOB_TOL && z > KNOB_MID - KNOB_TOL) {
+    //     // Knob is in the central deadband
+    //     return 0;
+    // } else if (z >= KNOB_MID + KNOB_TOL) {
+    //     // Knob is full on (consider making variable map)
+    //     return 10;
+    // } else if (z <= KNOB_MID - KNOB_TOL) {
+    //     // Joystick is full off (consider making variable map)
+    //     return -10;
+    // }
+    return 7;  // Catch case
 }
 
 void init_pot_tracking() {
@@ -104,4 +134,15 @@ void track_pots(_TIMER *self) {
     temp = (int) (pin_read(&A[KNOB_PIN_IN]) >> 6);
     PotTracker.z_accumulator = (temp >> KNOB_ALPHA) +
                                ((PotTracker.z_accumulator * ((1 << KNOB_ALPHA) - 1)) >> KNOB_ALPHA);
+}
+
+void init_z_axis() {
+    pin_digitalOut(&D[12]);
+    oc_servo(&oc1, &D[12], &timer2, 20E-3, 1E-3, 2E-3, 0);
+}
+
+void set_z(_TIMER *self) {
+    int z = get_z();
+
+    pin_write(&D[12],z*4681);
 }

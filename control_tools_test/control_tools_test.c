@@ -6,6 +6,7 @@
 #include "timer.h"
 #include "uart.h"
 #include "ui.h"
+#include "oc.h"
 #include <stdio.h>
 
 // Tests out the control_tools library
@@ -23,12 +24,16 @@ void setup() {
     init_timer();
     init_uart();
     init_ui();
+    init_oc();
     led_on(&led1); led_on(&led2); led_on(&led3);
 
     init_coin_tracking(&accept_coin);
 
     init_pot_tracking();
-	timer_every(&timer3, 1.0 / TRACK_POT_FREQ, track_pots);    
+	timer_every(&timer3, 1.0 / TRACK_POT_FREQ, track_pots);  
+
+    init_z_axis();
+    timer_every(&timer4, .001, set_z);
 
     timer_setPeriod(&timer1, 0.1);
     timer_start(&timer1);
