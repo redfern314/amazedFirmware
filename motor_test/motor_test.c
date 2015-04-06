@@ -20,24 +20,30 @@ int16_t main(void) {
     printf("Hello World!\n");
     led_on(&led1); led_on(&led2); led_on(&led3);
 
-    printf("What is your name? ");
-    uart_gets(&uart1, string, 40);
-    printf("Hello %s!\n", string);
+    // printf("What is your name? ");
+    // uart_gets(&uart1, string, 40);
+    // printf("Hello %s!\n", string);
 
     printf("Press sw1 and sw2 to drive the motors\n");
 
     while (1) {
         if (!sw_read(&sw1)) {
-            pin_clear(&D[5]);
-            pin_set(&D[6]);
+            pin_clear(&D[12]);
+            pin_set(&D[13]);
+            pin_clear(&D[9]);
+            pin_set(&D[10]);
         }
         else if (!sw_read(&sw2)) {
-            pin_set(&D[5]);
-            pin_clear(&D[6]);
+            pin_set(&D[12]);
+            pin_clear(&D[13]);
+            pin_set(&D[9]);
+            pin_clear(&D[10]);
         }
         else {
-            pin_clear(&D[5]);
-            pin_clear(&D[6]);
+            pin_clear(&D[12]);
+            pin_clear(&D[13]);
+            pin_clear(&D[9]);
+            pin_clear(&D[10]);
         }
     }
 }

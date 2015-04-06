@@ -14,21 +14,47 @@ void (*coin_callback)(void);
 void init_coin_tracking(void (*callback)(void)) {
     coin_callback = callback;
     pin_digitalIn(&D[COIN_READ_PIN]);
+    pin_digitalIn(&D[9]);
+    pin_digitalIn(&D[10]);
 
-    // Configure an interrupt on the coin input pin
+    // Configure an external interrupt on the coin input pin and for each of the 2 software limit switches
     __builtin_write_OSCCONL(OSCCON&0xBF);
     RPINR0bits.INT1R = 22; // equivalent to RPINR0 |= (22 << 8), sets INT1 to RP22 / D13
+    RPINR1bits.INT2R = 3; // equivalent to RPINR1 |= (3 << 8), sets INT2 to RP3 / D9
     __builtin_write_OSCCONL(OSCCON|0x40);
 
-    INTCON2bits.INT1EP = 0; // interrupt fires on pos edge
+    // Coin interrupt
+    INTCON2bits.INT1EP = 0; // interrupt 1 fires on pos edge
+    IFS1bits.INT1IF = 0; // disable interrupt 1 flag
     IEC1bits.INT1IE = 1; // enable external interrupt 1
-    IFS1bits.INT1IF = 0; // disable interrupt flag
+
+    // Left limit switch interrupt
+    INTCON2bits.INT2EP = 0; // interrupt 2 fires on pos edge
+    IFS1bits.INT2IF = 0; // disable interrupt 2 flag
+    IEC1bits.INT2IE = 1; // enable external interrupt 2
+
+    // Right limit switch interrupt
+    INTCON2bits.INT0EP = 0; // interrupt 0 fires on pos edge
+    IFS0bits.INT0IF = 0; // disable interrupt 0 flag
+    IEC0bits.INT0IE = 1; // enable external interrupt 0
 }
 
 // Interrupt handler for INT1
 void __attribute__((interrupt, auto_psv)) _INT1Interrupt(void) {
-    IFS1bits.INT1IF = 0; // disable interrupt flag
+    IFS1bits.INT1IF = 0; // disable interrupt 1 flag
     coin_callback();
+}
+
+// Interrupt handler for INT2
+void __attribute__((interrupt, auto_psv)) _INT2Interrupt(void) {
+    IFS1bits.INT2IF = 0; // disable interrupt 2 flag
+    printf("OH GOD LIMIT SWITCHES 2\r\n");
+}
+
+// Interrupt handler for INT0
+void __attribute__((interrupt, auto_psv)) _INT0Interrupt(void) {
+    IFS0bits.INT0IF = 0; // disable interrupt 0 flag
+    printf("OH GOD LIMIT SWITCHES 0\r\n");
 }
 
 // Joystick tracker

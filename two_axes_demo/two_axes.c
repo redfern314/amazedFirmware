@@ -57,13 +57,13 @@ void setMotor() {
 
         if (motorDirection == -10) {
             // Config PWM for IN1 (D6)
-            oc_pwm(&oc2,&D[6],&timer2,PWM_FREQ,motorDutyCycle);
+            oc_pwm(&oc2,&D[6],NULL,PWM_FREQ,motorDutyCycle);
 
             // Set IN2 (D5) low
             pin_clear(&D[5]);
         } else if (motorDirection == 10) {
             // Config PWM for IN2 (D5)
-            oc_pwm(&oc2,&D[5],&timer2,PWM_FREQ,motorDutyCycle);
+            oc_pwm(&oc2,&D[5],NULL,PWM_FREQ,motorDutyCycle);
 
             // Set IN1 (D6) low
             pin_clear(&D[6]);
@@ -102,12 +102,13 @@ void setup() {
     init_pot_tracking();
 	timer_every(&timer3, 1.0 / TRACK_POT_FREQ, track_pots);    
 
-    oc_pwm(&oc2, &D[6], &timer3, PWM_FREQ, 0); // Motor PWM setup
-    timer_every(&timer2,0.1,&setMotor); // Motor control interrupt
-
     // Initialize z axis control
     pin_digitalOut(&D[12]);
     oc_servo(&oc1, &D[12], &timer5, 20E-3, 1E-3, 2E-3, 0); // start airflow at fully open
+
+    // Initialize x axis control
+    oc_pwm(&oc2, &D[6], NULL, PWM_FREQ, 0); // Motor PWM setup
+    timer_every(&timer2,0.1,&setMotor); // Motor control interrupt
 
     // Debug timers
     timer_setPeriod(&timer1, 0.1);
