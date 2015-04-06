@@ -7,6 +7,7 @@
 #include "pin.h"
 #include "oc.h"
 
+
 #ifndef SCORE_PIC
 // Coin tracker callback
 void (*coin_callback)(void);
@@ -44,35 +45,6 @@ void __attribute__((interrupt, auto_psv)) _INT1Interrupt(void) {
     IFS1bits.INT1IF = 0; // disable interrupt 1 flag
     coin_callback();
 }
-#endif
-
-
-#ifdef SCORE_PIC
-// Ball tracker callback
-void (*ball_callback)(void);
-
-void init_ball_tracking(void (*callback)(void)) {
-    ball_callback = callback;
-    pin_digitalIn(&D[WIN_BALL_PIN]);
-    pin_digitalIn(&D[LOSE_BALL_PIN]);
-
-    // Configure an interrupt on the coin input pin
-    __builtin_write_OSCCONL(OSCCON&0xBF);
-    RPINR0bits.INT1R = 22; // equivalent to RPINR0 |= (22 << 8), sets INT1 to RP22 / D13
-    __builtin_write_OSCCONL(OSCCON|0x40);
-
-    INTCON2bits.INT1EP = 0; // interrupt fires on pos edge
-    IEC1bits.INT1IE = 1; // enable external interrupt 1
-    IFS1bits.INT1IF = 0; // disable interrupt flag
-}
-
-// Interrupt handler for INT1
-void __attribute__((interrupt, auto_psv)) _INT1Interrupt(void) {
-    IFS1bits.INT1IF = 0; // disable interrupt flag
-    ball_callback();
-}
-#endif
-
 
 // Interrupt handler for INT2
 void __attribute__((interrupt, auto_psv)) _INT2Interrupt(void) {
@@ -85,6 +57,49 @@ void __attribute__((interrupt, auto_psv)) _INT0Interrupt(void) {
     IFS0bits.INT0IF = 0; // disable interrupt 0 flag
     printf("OH GOD LIMIT SWITCHES 0\r\n");
 }
+
+#endif
+
+
+#ifdef SCORE_PIC
+// Ball tracker callback
+void (*ball_callback)(int);
+
+void init_ball_tracking(void (*callback)(int)) {
+    ball_callback = callback;
+    pin_digitalIn(&D[WIN_BALL_PIN]);
+    pin_digitalIn(&D[LOSE_BALL_PIN]);
+
+    // Configure an interrupt on the coin input pin
+    __builtin_write_OSCCONL(OSCCON&0xBF);
+    RPINR0bits.INT1R = 22; // equivalent to RPINR0 |= (22 << 8), sets INT1 to RP22 / D13
+    RPINR1bits.INT2R = 23; // equivalent to RPINR1 |= (3 << 8), sets INT2 to RP3 / D12
+    __builtin_write_OSCCONL(OSCCON|0x40);
+
+    INTCON2bits.INT1EP = 0; // interrupt 1 fires on neg edge
+    IFS1bits.INT1IF = 0; // disable interrupt 1 flag
+    IEC1bits.INT1IE = 1; // enable external interrupt 1
+
+    INTCON2bits.INT2EP = 0; // interrupt 2 fires on neg edge
+    IFS1bits.INT2IF = 0; // disable interrupt 2 flag
+    IEC1bits.INT2IE = 1; // enable external interrupt 
+
+}
+
+// Interrupt handler for INT1
+void __attribute__((interrupt, auto_psv)) _INT1Interrupt(void) {
+    IFS1bits.INT1IF = 0; // disable interrupt flag
+    ball_callback(1);
+}
+
+// Interrupt handler for INT2
+void __attribute__((interrupt, auto_psv)) _INT2Interrupt(void) {
+    IFS1bits.INT2IF = 0; // disable interrupt 2 flag
+    ball_callback(0);
+}
+
+#endif
+
 
 // Joystick tracker
 _POTENTIOMETER_TRACKER PotTracker;

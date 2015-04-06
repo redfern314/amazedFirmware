@@ -49,11 +49,13 @@ typedef struct _COIN_TRACKER {
     int total_coin_count;
 } _COIN_TRACKER;
 
-void init_coin_tracking();
-int get_new_coin();
-int get_coins();
-void track_coins(_TIMER *self);
+#ifndef SCORE_PIC
+void init_coin_tracking(void (*callback)(void));
+#endif
 
+#ifdef SCORE_PIC
+void init_ball_tracking(void (*callback)(int));
+#endif
 
 // Potentiometer tracker
 typedef struct _POTENTIOMETER_TRACKER {
