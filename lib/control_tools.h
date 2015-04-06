@@ -12,6 +12,10 @@
 #define TRACK_COIN_FREQ     20   // 20 Hz. Too fast gives false positives
 #define COIN_VOLTAGE_LEVEL  40   // Voltage level that indicates coin
 
+// Ball tracker
+#define WIN_BALL_PIN        12   // Digital pin for interrupt
+#define LOSE_BALL_PIN       13   // Digital pin for interrupt
+
 // X-Y-Z tracker
 #define X_PIN_IN            4    // Analog pin
 #define Y_PIN_IN            3    // Analog pin
@@ -63,8 +67,5 @@ int get_x();
 int get_y();
 int get_z();
 void track_pots();
-
-void init_z_axis();
-void set_z(_TIMER *self);
 
 #endif
