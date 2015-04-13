@@ -12,19 +12,25 @@
 #define TRACK_COIN_FREQ     20   // 20 Hz. Too fast gives false positives
 #define COIN_VOLTAGE_LEVEL  40   // Voltage level that indicates coin
 
+// Limit switch input pins
+#define LIMIT_X_LEFT_PIN    0
+#define LIMIT_X_RIGHT_PIN   1
+#define LIMIT_Y_LEFT_PIN    2
+#define LIMIT_Y_RIGHT_PIN   3
+
 // Ball tracker
 #define WIN_BALL_PIN        12   // Digital pin for interrupt
 #define LOSE_BALL_PIN       13   // Digital pin for interrupt
 
 // X-Y-Z tracker
-#define X_PIN_IN            4    // Analog pin
-#define Y_PIN_IN            3    // Analog pin
-#define KNOB_PIN_IN         5    // Analog pin
+#define X_PIN_IN            2    // Analog pin
+#define Y_PIN_IN            1    // Analog pin
+#define KNOB_PIN_IN         0    // Analog pin
 #define TRACK_POT_FREQ      100  // 100 Hz.
 #define JOYSTICK_MIN        805  // Analog voltage
 #define JOYSTICK_MAX        940  // Analog voltage
 #define JOYSTICK_MID        875  // Analog voltage
-#define JOYSTICK_TOL        25   // Analog voltage
+#define JOYSTICK_TOL        20   // Analog voltage
 #define JOYSTICK_ALPHA      4    // Part of an exponential moving average
                                  // http://stackoverflow.com/a/10990656
                                  // NOTE: Defined here as 4 bits (16) instead

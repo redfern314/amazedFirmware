@@ -20,7 +20,8 @@
 #define false                   0
 
 #define PWM_FREQ                5000
-#define motorDutyCycle          65535
+#define motorXDutyCycle         65535
+#define motorYDutyCycle         30000
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -28,8 +29,10 @@
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 
-int8_t motorDirection = 10;
-int8_t prevMotorDirection = 0;
+int8_t motorXDirection = 10;
+int8_t prevMotorXDirection = 0;
+int8_t motorYDirection = 10;
+int8_t prevMotorYDirection = 0;
 uint16_t prevDutyCycle = 65535;
 uint8_t coins_read = 0;
 
@@ -47,32 +50,58 @@ void accept_coin() {
 void setMotor() {
     // set the servo position based on z-axis pot
     int z = get_z();
-    pin_write(&D[12],z*Z_STEP_SIZE);
+    pin_write(&D[3],z*Z_STEP_SIZE);
 
     // set the motor direction based on x-axis pot
-    motorDirection = get_x(); // update the direction from control_tools
+    motorXDirection = get_x(); // update the direction from control_tools
 
-    if (motorDirection != prevMotorDirection || motorDutyCycle != prevDutyCycle) {
+    if (motorXDirection != prevMotorXDirection || motorXDutyCycle != prevDutyCycle) {
         oc_free(&oc2);
 
-        if (motorDirection == -10) {
+        if (motorXDirection == -10) {
             // Config PWM for IN1 (D6)
-            oc_pwm(&oc2,&D[6],NULL,PWM_FREQ,motorDutyCycle);
+            oc_pwm(&oc2,&D[9],NULL,PWM_FREQ,motorXDutyCycle);
 
             // Set IN2 (D5) low
-            pin_clear(&D[5]);
-        } else if (motorDirection == 10) {
+            pin_clear(&D[10]);
+        } else if (motorXDirection == 10) {
             // Config PWM for IN2 (D5)
-            oc_pwm(&oc2,&D[5],NULL,PWM_FREQ,motorDutyCycle);
+            oc_pwm(&oc2,&D[10],NULL,PWM_FREQ,motorXDutyCycle);
 
             // Set IN1 (D6) low
-            pin_clear(&D[6]);
+            pin_clear(&D[9]);
         } else {
-            pin_clear(&D[5]);
-            pin_clear(&D[6]);
+            pin_clear(&D[9]);
+            pin_clear(&D[10]);
         }
-        prevDutyCycle = motorDutyCycle;
-        prevMotorDirection = motorDirection;
+        prevDutyCycle = motorXDutyCycle;
+        prevMotorXDirection = motorXDirection;
+    }
+
+    // set the motor direction based on y-axis pot
+    motorYDirection = get_y(); // update the direction from control_tools
+
+    if (motorYDirection != prevMotorYDirection || motorYDutyCycle != prevDutyCycle) {
+        oc_free(&oc3);
+
+        if (motorYDirection == -10) {
+            // Config PWM for IN1 (D6)
+            oc_pwm(&oc3,&D[12],NULL,PWM_FREQ,motorYDutyCycle);
+
+            // Set IN2 (D5) low
+            pin_clear(&D[13]);
+        } else if (motorYDirection == 10) {
+            // Config PWM for IN2 (D5)
+            oc_pwm(&oc3,&D[13],NULL,PWM_FREQ,motorYDutyCycle);
+
+            // Set IN1 (D6) low
+            pin_clear(&D[12]);
+        } else {
+            pin_clear(&D[12]);
+            pin_clear(&D[13]);
+        }
+        prevDutyCycle = motorYDutyCycle;
+        prevMotorYDirection = motorYDirection;
     }
 }
 
@@ -93,7 +122,7 @@ void setup() {
     led_on(&led1);
 
     init_coin_tracking(&accept_coin);
-    while (coins_read == 0) { } // wait until a coin is inserted
+    // while (coins_read == 0) { } // wait until a coin is inserted
 
     led_on(&led3);
 
@@ -103,16 +132,19 @@ void setup() {
 	timer_every(&timer3, 1.0 / TRACK_POT_FREQ, track_pots);    
 
     // Initialize z axis control
-    pin_digitalOut(&D[12]);
-    oc_servo(&oc1, &D[12], &timer5, 20E-3, 1E-3, 2E-3, 0); // start airflow at fully open
+    pin_digitalOut(&D[3]);
+    oc_servo(&oc1, &D[3], &timer5, 20E-3, 1E-3, 2E-3, 0); // start airflow at fully open
 
     // Initialize x axis control
-    oc_pwm(&oc2, &D[6], NULL, PWM_FREQ, 0); // Motor PWM setup
+    oc_pwm(&oc2, &D[9], NULL, PWM_FREQ, 0); // Motor PWM setup
+    oc_pwm(&oc3, &D[12], NULL, PWM_FREQ, 0); // Motor PWM setup
     timer_every(&timer2,0.1,&setMotor); // Motor control interrupt
 
     // Debug timers
     timer_setPeriod(&timer1, 0.1);
     timer_start(&timer1);
+
+    printf("Starting up\n");
 }
 
 int16_t main(void) {
@@ -126,7 +158,7 @@ int16_t main(void) {
             printf("\tX: %d\n", get_x());
             printf("\tY: %d\n", get_y());
             printf("\tZ: %d\n", get_z());
-            // printf("X: %d\tY: %d\n", get_x(), get_y());
+            printf("X: %d\tY: %d\n", get_x(), get_y());
         }
     }
 }
