@@ -162,7 +162,7 @@ int get_z() {
         return 11;
     } else if (z <= 871) {
         return 12;
-    } else if (z <= KNOB_MAX) {
+    } else {
         return 13;
     }
     // if (z < KNOB_MID + KNOB_TOL && z > KNOB_MID - KNOB_TOL) {
