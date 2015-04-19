@@ -65,6 +65,25 @@ void __attribute__((interrupt, auto_psv)) _INT0Interrupt(void) {
 // Ball tracker callback
 void (*ball_callback)(int);
 
+void init_game() {
+    pin_digitalOut(&D[DIGIT1_PIN]);
+    pin_digitalOut(&D[DIGIT2_PIN]);
+    pin_digitalOut(&D[DIGIT3_PIN]);
+    pin_digitalOut(&D[DIGIT4_PIN]);
+
+    pin_digitalOut(&D[SEGMENTA_PIN]);
+    pin_digitalOut(&D[SEGMENTB_PIN]);
+    pin_digitalOut(&D[SEGMENTC_PIN]);
+    pin_digitalOut(&D[SEGMENTD_PIN]);
+    pin_digitalOut(&D[SEGMENTE_PIN]);
+    pin_digitalOut(&D[SEGMENTF_PIN]);
+    pin_digitalOut(&D[SEGMENTG_PIN]);
+
+    timer_setPeriod(&timer2,10);
+    timer_start(&timer2);
+    timer_every(&timer1,.0001,display_elapsed_time);
+}
+
 void init_ball_tracking(void (*callback)(int)) {
     ball_callback = callback;
     pin_digitalIn(&D[WIN_BALL_PIN]);
@@ -98,8 +117,173 @@ void __attribute__((interrupt, auto_psv)) _INT2Interrupt(void) {
     ball_callback(0);
 }
 
-#endif
+void display_elapsed_time(_TIMER *self) {
+    int sampled_time = (int) timer_time(&timer2);
+    
+    for(int a = 0; a < 100; a++) {
+        int display_time = sampled_time;
+        for(int digit = 4 ; digit > 0 ; digit--) {
+            //Turn on a digit for a short amount of time
+            switch(digit) {
+            case 4:
+              pin_clear(&D[DIGIT1_PIN]);
+              break;
+            case 3:
+              pin_clear(&D[DIGIT2_PIN]);
+              break;
+            case 2:
+              pin_clear(&D[DIGIT3_PIN]);
+              break;
+            case 1:
+              pin_clear(&D[DIGIT4_PIN]);
+              break;
+            }
 
+            light_segments(display_time % 10);
+            display_time = display_time / 10;
+
+            int wait = 1;
+            timer_setPeriod(&timer3, .001);
+            timer_start(&timer3);
+            while (wait) {
+                if (timer_flag(&timer3)) {
+                    timer_lower(&timer3);
+                    timer_stop(&timer3);
+                    clear_all();
+                    wait = 0;
+                }
+            }
+        }
+    }
+}
+
+void light_segments(int numberToDisplay) {
+    switch (numberToDisplay){
+
+    case 0:
+        pin_write(&D[SEGMENTA_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTB_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTC_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTD_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTE_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTF_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTG_PIN], SEGMENT_OFF);
+        break;
+
+    case 1:
+        pin_write(&D[SEGMENTA_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTB_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTC_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTD_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTE_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTF_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTG_PIN], SEGMENT_OFF);
+        break;
+
+    case 2:
+        pin_write(&D[SEGMENTA_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTB_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTC_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTD_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTE_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTF_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTG_PIN], SEGMENT_ON);
+        break;
+
+    case 3:
+        pin_write(&D[SEGMENTA_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTB_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTC_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTD_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTE_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTF_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTG_PIN], SEGMENT_ON);
+        break;
+
+    case 4:
+        pin_write(&D[SEGMENTA_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTB_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTC_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTD_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTE_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTF_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTG_PIN], SEGMENT_ON);
+        break;
+
+    case 5:
+        pin_write(&D[SEGMENTA_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTB_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTC_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTD_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTE_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTF_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTG_PIN], SEGMENT_ON);
+        break;
+
+    case 6:
+        pin_write(&D[SEGMENTA_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTB_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTC_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTD_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTE_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTF_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTG_PIN], SEGMENT_ON);
+        break;
+
+    case 7:
+        pin_write(&D[SEGMENTA_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTB_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTC_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTD_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTE_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTF_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTG_PIN], SEGMENT_OFF);
+        break;
+
+    case 8:
+        pin_write(&D[SEGMENTA_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTB_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTC_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTD_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTE_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTF_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTG_PIN], SEGMENT_ON);
+        break;
+
+    case 9:
+        pin_write(&D[SEGMENTA_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTB_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTC_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTD_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTE_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTF_PIN], SEGMENT_ON);
+        pin_write(&D[SEGMENTG_PIN], SEGMENT_ON);
+        break;
+
+    case 10:
+        pin_write(&D[SEGMENTA_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTB_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTC_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTD_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTE_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTF_PIN], SEGMENT_OFF);
+        pin_write(&D[SEGMENTG_PIN], SEGMENT_OFF);
+        break;
+    }
+}
+
+void clear_all () {
+    //Turn off all segments
+    light_segments(10); 
+
+    //Turn off all digits
+    pin_set(&D[DIGIT1_PIN]);
+    pin_set(&D[DIGIT2_PIN]);
+    pin_set(&D[DIGIT3_PIN]);
+    pin_set(&D[DIGIT4_PIN]);
+}
+
+#endif
 
 // Joystick tracker
 _POTENTIOMETER_TRACKER PotTracker;

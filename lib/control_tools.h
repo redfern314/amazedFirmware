@@ -40,6 +40,20 @@
 
 #define Z_STEP_SIZE         4681 // (65535 - 1) / 14
 
+// 7 segment
+#define DIGIT1_PIN          0    // Pin for digit1
+#define DIGIT2_PIN          1    // Pin for digit2
+#define DIGIT3_PIN          2    // Pin for digit3
+#define DIGIT4_PIN          3    // Pin for digit4
+#define SEGMENTA_PIN        4
+#define SEGMENTB_PIN        5   
+#define SEGMENTC_PIN        6
+#define SEGMENTD_PIN        7
+#define SEGMENTE_PIN        8
+#define SEGMENTF_PIN        9
+#define SEGMENTG_PIN        10
+#define SEGMENT_ON          10
+#define SEGMENT_OFF         0
 
 // Coin tracker
 typedef struct _COIN_TRACKER {
@@ -50,11 +64,15 @@ typedef struct _COIN_TRACKER {
 } _COIN_TRACKER;
 
 #ifndef SCORE_PIC
+void init_game();
 void init_coin_tracking(void (*callback)(void));
 #endif
 
 #ifdef SCORE_PIC
 void init_ball_tracking(void (*callback)(int));
+void display_elapsed_time();
+void light_segments();
+void clear_all();
 #endif
 
 // Potentiometer tracker
