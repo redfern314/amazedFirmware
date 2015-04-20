@@ -5,7 +5,7 @@ import bootloadercmd as b
 
 # Type the filename you want, e.g. blink
 # Don't include the .c tag
-file_to_run = 'three_axes'
+file_to_run = 'main_pic'
 
 def setup_PIC_env():
   env = Environment(PIC = '24FJ128GB206', 
