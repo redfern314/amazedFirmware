@@ -135,7 +135,7 @@ void zeroAxes() {
     // Drive X to limit
     oc_pwm(&oc2, X_MOTOR_A, NULL, PWM_FREQ, 256 << 6);
     pin_clear(X_MOTOR_B);
-    while (!pin_read[&D[LIMIT_X_RIGHT_PIN]]) {
+    while (!pin_read(&D[LIMIT_X_RIGHT_PIN])) {
         // Hang until done
     }
     pin_clear(X_MOTOR_A);
@@ -143,7 +143,7 @@ void zeroAxes() {
     // Drive Y to limit
     oc_pwm(&oc2, Y_MOTOR_A, NULL, PWM_FREQ, 256 << 6);
     pin_clear(Y_MOTOR_B);
-    while (!pin_read[&D[LIMIT_Y_FRONT_PIN]]) {
+    while (!pin_read(&D[LIMIT_Y_FRONT_PIN])) {
         // Hang until done
     }
     pin_clear(Y_MOTOR_A);
@@ -196,7 +196,7 @@ int16_t main(void) {
     while (1) {       
         if (timer_flag(&timer1)) {
             timer_lower(&timer1);
-            if (pin_read(&D[START_STOP_PIN] && !vacuum_on) {
+            if (pin_read(&D[START_STOP_PIN]) && !vacuum_on) {
                 vacuum_on = 1;
                 timer_disableInterrupt(&timer2);
                 zeroAxes();
@@ -214,4 +214,4 @@ int16_t main(void) {
             printf("X: %d\tY: %d\n", get_x(), get_y());
         }
     }
-}\
+}

@@ -24,8 +24,10 @@ void init_coin_and_limit_tracking(void (*coin_cb)(void), int (*x_cb)(void),
     y_callback = y_cb;
 
     pin_digitalIn(&D[COIN_READ_PIN]);
-    pin_digitalIn(&D[LIMIT_SWITCH_X_LEFT]);
-    pin_digitalIn(&D[LIMIT_SWITCH_X_RIGHT]);
+    pin_digitalIn(&D[LIMIT_X_LEFT_PIN]);
+    pin_digitalIn(&D[LIMIT_X_RIGHT_PIN]);
+    pin_digitalIn(&D[LIMIT_Y_BACK_PIN]);
+    pin_digitalIn(&D[LIMIT_Y_FRONT_PIN]);
 
     // Configure an external interrupt on the coin input pin and for each of the 2 software limit switches
     __builtin_write_OSCCONL(OSCCON&0xBF);
