@@ -9,54 +9,63 @@
 
 
 #ifndef SCORE_PIC
+
 // Coin tracker callback
 void (*coin_callback)(void);
+// X limit callback
+int (*x_callback)(void);
+// Y limit callback
+int (*y_callback)(void);
 
-void init_coin_tracking(void (*callback)(void)) {
-    coin_callback = callback;
-    // pin_digitalIn(&D[COIN_READ_PIN]);
-    // pin_digitalIn(&D[LIMIT_SWITCH_X_LEFT]);
-    // pin_digitalIn(&D[LIMIT_SWITCH_X_RIGHT]);
+void init_coin_and_limit_tracking(void (*coin_cb)(void), int (*x_cb)(void),
+                                  int (*y_cb)(void)) {
+    coin_callback = coin_cb;
+    x_callback = x_cb;
+    y_callback = y_cb;
+
+    pin_digitalIn(&D[COIN_READ_PIN]);
+    pin_digitalIn(&D[LIMIT_SWITCH_X_LEFT]);
+    pin_digitalIn(&D[LIMIT_SWITCH_X_RIGHT]);
 
     // Configure an external interrupt on the coin input pin and for each of the 2 software limit switches
-    // __builtin_write_OSCCONL(OSCCON&0xBF);
-    // RPINR0bits.INT1R = 22; // equivalent to RPINR0 |= (22 << 8), sets INT1 to RP22 / D13
-    // RPINR1bits.INT2R = 3; // equivalent to RPINR1 |= (3 << 8), sets INT2 to RP3 / D9
-    // __builtin_write_OSCCONL(OSCCON|0x40);
+    __builtin_write_OSCCONL(OSCCON&0xBF);
+    RPINR0bits.INT1R = 22; // equivalent to RPINR0 |= (22 << 8), sets INT1 to RP22 / D13
+    RPINR1bits.INT2R = 3; // equivalent to RPINR1 |= (3 << 8), sets INT2 to RP3 / D9
+    __builtin_write_OSCCONL(OSCCON|0x40);
 
     // Coin interrupt
-    // INTCON2bits.INT1EP = 0; // interrupt 1 fires on pos edge
-    // IFS1bits.INT1IF = 0; // disable interrupt 1 flag
-    // IEC1bits.INT1IE = 1; // enable external interrupt 1
+    INTCON2bits.INT1EP = 0; // interrupt 1 fires on pos edge
+    IFS1bits.INT1IF = 0; // disable interrupt 1 flag
+    IEC1bits.INT1IE = 1; // enable external interrupt 1
 
     // Left limit switch interrupt
-    // INTCON2bits.INT2EP = 0; // interrupt 2 fires on pos edge
-    // IFS1bits.INT2IF = 0; // disable interrupt 2 flag
-    // IEC1bits.INT2IE = 1; // enable external interrupt 2
+    INTCON2bits.INT2EP = 0; // interrupt 2 fires on pos edge
+    IFS1bits.INT2IF = 0; // disable interrupt 2 flag
+    IEC1bits.INT2IE = 1; // enable external interrupt 2
 
     // Right limit switch interrupt
-    // INTCON2bits.INT0EP = 0; // interrupt 0 fires on pos edge
-    // IFS0bits.INT0IF = 0; // disable interrupt 0 flag
-    // IEC0bits.INT0IE = 1; // enable external interrupt 0
+    INTCON2bits.INT0EP = 0; // interrupt 0 fires on pos edge
+    IFS0bits.INT0IF = 0; // disable interrupt 0 flag
+    IEC0bits.INT0IE = 1; // enable external interrupt 0
 }
 
 // Interrupt handler for INT1
-// void __attribute__((interrupt, auto_psv)) _INT1Interrupt(void) {
-//     IFS1bits.INT1IF = 0; // disable interrupt 1 flag
-//     coin_callback();
-// }
+void __attribute__((interrupt, auto_psv)) _INT1Interrupt(void) {
+    IFS1bits.INT1IF = 0; // disable interrupt 1 flag
+    coin_callback();
+}
 
 // Interrupt handler for INT2
-// void __attribute__((interrupt, auto_psv)) _INT2Interrupt(void) {
-//     IFS1bits.INT2IF = 0; // disable interrupt 2 flag
-//     printf("OH GOD LIMIT SWITCHES 2\r\n");
-// }
+void __attribute__((interrupt, auto_psv)) _INT2Interrupt(void) {
+    IFS1bits.INT2IF = 0; // disable interrupt 2 flag
+    x_callback();
+}
 
 // Interrupt handler for INT0
-// void __attribute__((interrupt, auto_psv)) _INT0Interrupt(void) {
-//     IFS0bits.INT0IF = 0; // disable interrupt 0 flag
-//     printf("OH GOD LIMIT SWITCHES 0\r\n");
-// }
+void __attribute__((interrupt, auto_psv)) _INT0Interrupt(void) {
+    IFS0bits.INT0IF = 0; // disable interrupt 0 flag
+    x_callback();
+}
 
 #endif
 
@@ -106,30 +115,26 @@ _POTENTIOMETER_TRACKER PotTracker;
 
 int get_x() {
     int x = PotTracker.x_accumulator;
-    if (x < JOYSTICK_MID + JOYSTICK_TOL && x > JOYSTICK_MID - JOYSTICK_TOL) {
-        // Joystick is in the central deadband
-        return 0;
-    } else if (x >= JOYSTICK_MID + JOYSTICK_TOL) {
-        // Joystick is full on (consider making variable map)
-        return 10;
-    } else if (x <= JOYSTICK_MID - JOYSTICK_TOL) {
-        // Joystick is full off (consider making variable map)
-        return -10;
-    }
-    return 0;  // Catch case
+    return joystick_to_drive_command(x);
 }
 
 int get_y() {
     int y = PotTracker.y_accumulator;
-    if (y < JOYSTICK_MID + JOYSTICK_TOL && y > JOYSTICK_MID - JOYSTICK_TOL) {
+    return joystick_to_drive_command(y);
+}
+
+int joystick_to_drive_command(int sig) {
+    if (sig < JOYSTICK_MID + JOYSTICK_TOL && sig > JOYSTICK_MID - JOYSTICK_TOL) {
         // Joystick is in the central deadband
         return 0;
-    } else if (y >= JOYSTICK_MID + JOYSTICK_TOL) {
-        // Joystick is full on (consider making variable map)
+    } else if (sig >= JOYSTICK_MID + 2* JOYSTICK_TOL) {
         return 10;
-    } else if (y <= JOYSTICK_MID - JOYSTICK_TOL) {
-        // Joystick is full off (consider making variable map)
+    } else if (sig >= JOYSTICK_MID + JOYSTICK_TOL) {
+        return 3;
+    } else if (sig <= JOYSTICK_MID - 2 * JOYSTICK_TOL) {
         return -10;
+    } else if (sig <= JOYSTICK_MID - JOYSTICK_TOL) {
+        return -3;
     }
     return 0;  // Catch case
 }
@@ -165,17 +170,6 @@ int get_z() {
     } else {
         return 13;
     }
-    // if (z < KNOB_MID + KNOB_TOL && z > KNOB_MID - KNOB_TOL) {
-    //     // Knob is in the central deadband
-    //     return 0;
-    // } else if (z >= KNOB_MID + KNOB_TOL) {
-    //     // Knob is full on (consider making variable map)
-    //     return 10;
-    // } else if (z <= KNOB_MID - KNOB_TOL) {
-    //     // Joystick is full off (consider making variable map)
-    //     return -10;
-    // }
-    return 7;  // Catch case
 }
 
 void init_pot_tracking() {
@@ -189,7 +183,6 @@ void init_pot_tracking() {
 
 void track_pots(_TIMER *self) {
     int temp;
-    
     // This complicated accumulator code is an attempt to calculate an
     // exponential moving average without float division, using only bitshifts
     // Idea taken from here: http://stackoverflow.com/a/10990656
