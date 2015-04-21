@@ -27,10 +27,10 @@
 #define Y_PIN_IN            1    // Analog pin
 #define KNOB_PIN_IN         0    // Analog pin
 #define TRACK_POT_FREQ      100  // 100 Hz.
-#define JOYSTICK_MIN        805  // Analog voltage
-#define JOYSTICK_MAX        940  // Analog voltage
-#define JOYSTICK_MID        875  // Analog voltage
-#define JOYSTICK_TOL        20   // Analog voltage
+#define JOYSTICK_MIN        800  // Analog voltage
+#define JOYSTICK_MAX        900  // Analog voltage
+#define JOYSTICK_MID        865  // Analog voltage
+#define JOYSTICK_TOL        10   // Analog voltage
 #define JOYSTICK_ALPHA      4    // Part of an exponential moving average
                                  // http://stackoverflow.com/a/10990656
                                  // NOTE: Defined here as 4 bits (16) instead

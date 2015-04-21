@@ -2,6 +2,7 @@
 
 #include <p24FJ128GB206.h>
 #include <math.h>
+#include <stdio.h>
 #include "common.h"
 #include "control_tools.h"
 #include "pin.h"
@@ -10,19 +11,15 @@
 
 #ifndef SCORE_PIC
 
-// Coin tracker callback
-// void (*coin_callback)(void);
 // X limit callback
 int (*x_callback)(void);
 // Y limit callback
 int (*y_callback)(void);
 
-void init_coin_and_limit_tracking(int (*x_cb)(void), int (*y_cb)(void)) {
-    // coin_callback = coin_cb;
+void init_limit_tracking(int (*x_cb)(void), int (*y_cb)(void)) {
     x_callback = x_cb;
     y_callback = y_cb;
 
-    // pin_digitalIn(&D[COIN_READ_PIN]);
     pin_digitalIn(&D[LIMIT_X_LEFT_PIN]);
     pin_digitalIn(&D[LIMIT_X_RIGHT_PIN]);
     // pin_digitalIn(&D[LIMIT_Y_BACK_PIN]);
@@ -114,17 +111,18 @@ int get_y() {
 }
 
 int joystick_to_drive_command(int sig) {
+    // NOTE: The joystick is not centered. Goes from 800(R) to 865(M) to 900(L)
     if (sig < JOYSTICK_MID + JOYSTICK_TOL && sig > JOYSTICK_MID - JOYSTICK_TOL) {
         // Joystick is in the central deadband
         return 0;
-    } else if (sig >= JOYSTICK_MID + 2* JOYSTICK_TOL) {
+    } else if (sig >= JOYSTICK_MID + 2 * JOYSTICK_TOL) {
         return 10;
     } else if (sig >= JOYSTICK_MID + JOYSTICK_TOL) {
-        return 3;
-    } else if (sig <= JOYSTICK_MID - 2 * JOYSTICK_TOL) {
+        return 6;
+    } else if (sig <= JOYSTICK_MID - 3 * JOYSTICK_TOL) {
         return -10;
     } else if (sig <= JOYSTICK_MID - JOYSTICK_TOL) {
-        return -3;
+        return -6;
     }
     return 0;  // Catch case
 }
