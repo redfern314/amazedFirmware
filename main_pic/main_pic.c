@@ -19,19 +19,18 @@
 #define true                    1
 #define false                   0
 
-#define X_MOTOR_A               &D[9]
-#define X_MOTOR_B               &D[10]
-#define Y_MOTOR_A               &D[12]
-#define Y_MOTOR_B               &D[13]
-#define Z_MOTOR                 &D[3]
+#define X_MOTOR_A_PIN           9
+#define X_MOTOR_B_PIN           10
+#define Y_MOTOR_A_PIN           12
+#define Y_MOTOR_B_PIN           13
+#define Z_MOTOR_PIN             3
 #define PWM_FREQ                5000
 #define motorXDutyCycle         1023
 #define motorYDutyCycle         512
 
-#define START_STOP_PIN          6  // Digital pin connected to Score PIC
-// #define START_STOP_PIN          x  // Digital pin connected to Score PIC
-#define RELAY_PIN               5  // Pin connected relay
-// #define RELAY_PIN               x  // Pin connected relay
+// TEMPORARY VALUE, WILL NEED TO BE MOVED TO FIT Y LIMIT SWITCHES
+#define START_STOP_PIN          2  // Digital pin connected to Score PIC
+
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -58,40 +57,46 @@ void accept_coin() {
 }
 
 int x_limit() {
-    pin_clear(X_MOTOR_A);
-    pin_clear(X_MOTOR_B);
+    printf("Saw X limit switch, halting!\n");
+    pin_clear(&D[X_MOTOR_A_PIN]);
+    pin_clear(&D[X_MOTOR_B_PIN]);
 }
 
 int y_limit() {
-    pin_clear(Y_MOTOR_A);
-    pin_clear(Y_MOTOR_B);
+    printf("Saw Y limit switch, halting!\n");
+    pin_clear(&D[Y_MOTOR_A_PIN]);
+    pin_clear(&D[Y_MOTOR_B_PIN]);
 }
 
 void setMotor() {
     // set the servo position based on z-axis pot
     int z = get_z();
-    pin_write(Z_MOTOR, z * Z_STEP_SIZE);
+    pin_write(&D[Z_MOTOR_PIN], z * Z_STEP_SIZE);
 
     // set the motor direction based on x-axis pot
     motorXDirection = get_x(); // update the direction from control_tools
 
     if (motorXDirection != prevMotorXDirection) {
+        printf("Hey, driving X motor!");
         oc_free(&oc2);
-        if (motorXDirection < 0 && !pin_read(&D[LIMIT_X_LEFT_PIN])) {
+        if (motorXDirection > 0 && !pin_read(&D[LIMIT_X_LEFT_PIN])) {
+            printf("Going LEFT\n");
             // Config PWM for IN1 (D6)
-            oc_pwm(&oc2, X_MOTOR_A, NULL, PWM_FREQ,
+            oc_pwm(&oc2, &D[X_MOTOR_B_PIN], NULL, PWM_FREQ,
                    (abs(motorXDirection) * motorXDutyCycle / 10) << 6);
             // Set IN2 (D5) low
-            pin_clear(X_MOTOR_B);
-        } else if (motorXDirection > 0 && !pin_read(&D[LIMIT_X_RIGHT_PIN])) {
+            pin_clear(&D[X_MOTOR_A_PIN]);
+        } else if (motorXDirection < 0 && !pin_read(&D[LIMIT_X_RIGHT_PIN])) {
+            printf("Going RIGHT\n");
             // Config PWM for IN2 (D5)
-            oc_pwm(&oc2, X_MOTOR_B, NULL, PWM_FREQ,
+            oc_pwm(&oc2, &D[X_MOTOR_A_PIN], NULL, PWM_FREQ,
                    (abs(motorXDirection) * motorXDutyCycle / 10) << 6);
             // Set IN1 (D6) low
-            pin_clear(X_MOTOR_A);
+            pin_clear(&D[X_MOTOR_B_PIN]);
         } else {
-            pin_clear(X_MOTOR_A);
-            pin_clear(X_MOTOR_B);
+            printf("STOPPP\n");
+            pin_clear(&D[X_MOTOR_A_PIN]);
+            pin_clear(&D[X_MOTOR_B_PIN]);
         }
         prevMotorXDirection = motorXDirection;
     }
@@ -102,21 +107,25 @@ void setMotor() {
     if (motorYDirection != prevMotorYDirection) {
         oc_free(&oc3);
 
-        if (motorYDirection < 0 && !pin_read(&D[LIMIT_Y_BACK_PIN])) {
+        if (motorYDirection < 0) {
+        // if (motorYDirection < 0 && !pin_read(&D[LIMIT_Y_FRONT_PIN])) {
+            printf("Going FORWARD\n");
             // Config PWM for IN1 (D6)
-            oc_pwm(&oc3, Y_MOTOR_A, NULL, PWM_FREQ,
+            oc_pwm(&oc3, &D[Y_MOTOR_A_PIN], NULL, PWM_FREQ,
                    (abs(motorYDirection) * motorYDirection / 10) << 6);
             // Set IN2 (D5) low
-            pin_clear(Y_MOTOR_B);
-        } else if (motorYDirection > 0 && !pin_read(&D[LIMIT_Y_FRONT_PIN])) {
+            pin_clear(&D[Y_MOTOR_B_PIN]);
+        } else if (motorYDirection > 0) {
+        // } else if (motorYDirection > 0 && !pin_read(&D[LIMIT_Y_BACK_PIN])) {
+            printf("Going BACK\n");
             // Config PWM for IN2 (D5)
-            oc_pwm(&oc3, Y_MOTOR_B, NULL, PWM_FREQ,
+            oc_pwm(&oc3, &D[Y_MOTOR_B_PIN], NULL, PWM_FREQ,
                    (abs(motorYDirection) * motorYDirection / 10) << 6);
             // Set IN1 (D6) low
-            pin_clear(Y_MOTOR_A);
+            pin_clear(&D[Y_MOTOR_A_PIN]);
         } else {
-            pin_clear(Y_MOTOR_A);
-            pin_clear(Y_MOTOR_B);
+            pin_clear(&D[Y_MOTOR_A_PIN]);
+            pin_clear(&D[Y_MOTOR_B_PIN]);
         }
         prevMotorYDirection = motorYDirection;
     }
@@ -130,23 +139,23 @@ void setMotor() {
 
 void zeroAxes() {
     // Go to hardcoded Z value
-    pin_write(Z_MOTOR, 2 * Z_STEP_SIZE);
+    pin_write(&D[Z_MOTOR_PIN], 2 * Z_STEP_SIZE);
 
     // Drive X to limit
-    oc_pwm(&oc2, X_MOTOR_A, NULL, PWM_FREQ, 256 << 6);
-    pin_clear(X_MOTOR_B);
+    oc_pwm(&oc2, &D[X_MOTOR_A_PIN], NULL, PWM_FREQ, 256 << 6);
+    pin_clear(&D[X_MOTOR_B_PIN]);
     while (!pin_read(&D[LIMIT_X_RIGHT_PIN])) {
         // Hang until done
     }
-    pin_clear(X_MOTOR_A);
+    pin_clear(&D[X_MOTOR_A_PIN]);
 
-    // Drive Y to limit
-    oc_pwm(&oc2, Y_MOTOR_A, NULL, PWM_FREQ, 256 << 6);
-    pin_clear(Y_MOTOR_B);
-    while (!pin_read(&D[LIMIT_Y_FRONT_PIN])) {
-        // Hang until done
-    }
-    pin_clear(Y_MOTOR_A);
+    // // Drive Y to limit
+    // oc_pwm(&oc2, &D[Y_MOTOR_A_PIN], NULL, PWM_FREQ, 256 << 6);
+    // pin_clear(&D[Y_MOTOR_B_PIN]);
+    // while (!pin_read(&D[LIMIT_Y_FRONT_PIN])) {
+    //     // Hang until done
+    // }
+    // pin_clear(&D[Y_MOTOR_A_PIN]);
 }
 
 // ---------------------------------------------------------------------------
@@ -172,12 +181,12 @@ void setup() {
 	timer_every(&timer3, 1.0 / TRACK_POT_FREQ, track_pots);
 
     // Initialize z axis control
-    pin_digitalOut(Z_MOTOR);
-    oc_servo(&oc1, Z_MOTOR, &timer5, 20E-3, 1E-3, 2E-3, 0); // start airflow at fully open
+    pin_digitalOut(&D[Z_MOTOR_PIN]);
+    oc_servo(&oc1, &D[Z_MOTOR_PIN], &timer5, 20E-3, 1E-3, 2E-3, 0); // start airflow at fully open
 
     // Initialize x axis control
-    oc_pwm(&oc2, X_MOTOR_A, NULL, PWM_FREQ, 0); // Motor PWM setup
-    oc_pwm(&oc3, Y_MOTOR_A, NULL, PWM_FREQ, 0); // Motor PWM setup
+    oc_pwm(&oc2, &D[X_MOTOR_A_PIN], NULL, PWM_FREQ, 0); // Motor PWM setup
+    oc_pwm(&oc3, &D[Y_MOTOR_A_PIN], NULL, PWM_FREQ, 0); // Motor PWM setup
     timer_every(&timer2, 0.1, &setMotor); // Motor control interrupt
 
     // Debug timers
@@ -185,7 +194,7 @@ void setup() {
     timer_start(&timer1);
 
     pin_digitalIn(&D[START_STOP_PIN]);
-    pin_digitalOut(&D[RELAY_PIN]);
+    // pin_digitalOut(&D[RELAY_PIN]);
 
     printf("Starting up\n");
 }
@@ -201,17 +210,19 @@ int16_t main(void) {
                 timer_disableInterrupt(&timer2);
                 zeroAxes();
                 timer_enableInterrupt(&timer2);
-                pin_set(&D[RELAY_PIN]);
+                // pin_set(&D[RELAY_PIN]);
             } else if (!pin_read(&D[START_STOP_PIN]) && vacuum_on) {
                 vacuum_on = 0;
-                pin_clear(&D[RELAY_PIN]);
+                // pin_clear(&D[RELAY_PIN]);
             }
             // printf("Number of coins seen so far: %d\n", get_coins());
-            printf("Control inputs:\n");
-            printf("\tX: %d\n", get_x());
-            printf("\tY: %d\n", get_y());
-            printf("\tZ: %d\n", get_z());
-            printf("X: %d\tY: %d\n", get_x(), get_y());
+            // printf("Control inputs:\n");
+            // printf("\tX: %d\n", get_x());
+            // printf("\tY: %d\n", get_y());
+            // printf("\tZ: %d\n", get_z());
+            // printf("\tX LEFT LIMIT SWITCH: %d\n", pin_read(&D[LIMIT_X_LEFT_PIN]));
+            // printf("\tX RIGHT LIMIT SWITCH: %d\n", pin_read(&D[LIMIT_X_RIGHT_PIN]));
+
         }
     }
 }
