@@ -15,8 +15,8 @@
 // Limit switch input pins
 #define LIMIT_X_LEFT_PIN    0
 #define LIMIT_X_RIGHT_PIN   1
-#define LIMIT_Y_LEFT_PIN    2
-#define LIMIT_Y_RIGHT_PIN   3
+// #define LIMIT_Y_BACK_PIN    2
+// #define LIMIT_Y_FRONT_PIN   3
 
 // Ball tracker
 #define WIN_BALL_PIN        12   // Digital pin for interrupt
@@ -27,10 +27,10 @@
 #define Y_PIN_IN            1    // Analog pin
 #define KNOB_PIN_IN         0    // Analog pin
 #define TRACK_POT_FREQ      100  // 100 Hz.
-#define JOYSTICK_MIN        805  // Analog voltage
-#define JOYSTICK_MAX        940  // Analog voltage
-#define JOYSTICK_MID        875  // Analog voltage
-#define JOYSTICK_TOL        20   // Analog voltage
+#define JOYSTICK_MIN        800  // Analog voltage
+#define JOYSTICK_MAX        900  // Analog voltage
+#define JOYSTICK_MID        870  // Analog voltage
+#define JOYSTICK_TOL        10   // Analog voltage
 #define JOYSTICK_ALPHA      4    // Part of an exponential moving average
                                  // http://stackoverflow.com/a/10990656
                                  // NOTE: Defined here as 4 bits (16) instead
