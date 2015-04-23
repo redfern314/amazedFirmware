@@ -45,9 +45,9 @@
 #define Z_STEP_SIZE         4681 // (65535 - 1) / 14
 
 // 7 segment
-#define SPI_IN              0    // Pin for digit1
-#define SPI_OUT             1    // Pin for digit2
-#define SPI_CLK             2    // Pin for digit3
+#define SPI_IN              1    // Pin for digit1
+#define SPI_OUT             2    // Pin for digit2
+#define SPI_CLK             3    // Pin for digit3
 
 // Coin tracker
 typedef struct _COIN_TRACKER {

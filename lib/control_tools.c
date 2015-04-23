@@ -145,8 +145,6 @@ void (*coin_callback)(void);
 void init_coin_tracking(void (*callback)(void)) {
     coin_callback = callback;
     pin_digitalIn(&D[COIN_READ_PIN]);
-    pin_digitalIn(&D[9]);
-    pin_digitalIn(&D[10]);
 
     // Configure an external interrupt on the coin input pin and for each of the 2 software limit switches
     __builtin_write_OSCCONL(OSCCON&0xBF);
@@ -187,12 +185,6 @@ void init_ball_tracking(void (*callback)(int)) {
 void __attribute__((interrupt, auto_psv)) _INT1Interrupt(void) {
     IFS1bits.INT1IF = 0; // disable interrupt flag
     ball_callback(1);
-}
-
-// Interrupt handler for INT2
-void __attribute__((interrupt, auto_psv)) _INT2Interrupt(void) {
-    IFS1bits.INT2IF = 0; // disable interrupt 2 flag
-    ball_callback(0);
 }
 
 void init_seven_segment() {
