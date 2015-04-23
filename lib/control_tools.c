@@ -160,6 +160,26 @@ void track_pots(_TIMER *self) {
 
 
 #ifdef SCORE_PIC
+// Coin tracker callback
+void (*coin_callback)(void);
+
+void init_coin_tracking(void (*callback)(void)) {
+    coin_callback = callback;
+    pin_digitalIn(&D[COIN_READ_PIN]);
+    pin_digitalIn(&D[9]);
+    pin_digitalIn(&D[10]);
+
+    // Configure an external interrupt on the coin input pin and for each of the 2 software limit switches
+    __builtin_write_OSCCONL(OSCCON&0xBF);
+    RPINR0bits.INT1R = 22; // equivalent to RPINR0 |= (22 << 8), sets INT1 to RP22 / D13
+    __builtin_write_OSCCONL(OSCCON|0x40);
+
+    // Coin interrupt
+    INTCON2bits.INT1EP = 0; // interrupt 1 fires on pos edge
+    IFS1bits.INT1IF = 0; // disable interrupt 1 flag
+    IEC1bits.INT1IE = 1; // enable external interrupt 1
+}
+
 // Ball tracker callback
 void (*ball_callback)(int);
 

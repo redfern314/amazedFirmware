@@ -60,12 +60,18 @@ typedef struct _COIN_TRACKER {
 } _COIN_TRACKER;
 
 #ifndef SCORE_PIC
+void init_limit_tracking();
+void init_pot_tracking();
+int get_x();
+int get_y();
+int get_z();
+void track_pots();
 #endif
 
 #ifdef SCORE_PIC
 void init_coin_tracking(void (*callback)(void));
-void init_seven_segment();
 void init_ball_tracking(void (*callback)(int));
+void init_seven_segment();
 void display_elapsed_time();
 #endif
 
@@ -75,11 +81,5 @@ typedef struct _POTENTIOMETER_TRACKER {
     int y_accumulator;
     int z_accumulator;
 } _POTENTIOMETER_TRACKER;
-
-void init_pot_tracking();
-int get_x();
-int get_y();
-int get_z();
-void track_pots();
 
 #endif
