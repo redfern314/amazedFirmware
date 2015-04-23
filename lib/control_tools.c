@@ -15,25 +15,28 @@
 // Limit switch initialization
 // These pins are numbered from the barrel jack
 _PIN pin0, pin1, pin2, pin3;
+_PIN *LIMIT_Y_FRONT_PIN, *LIMIT_Y_BACK_PIN, *RELAY_PIN;
 
-pin_init(&pin0, (uint16_t *)&PORTG, (uint16_t *)&TRISG, (uint16_t *)NULL,
-         9, -1, 8, 27, (uint16_t *)&RPOR13);
-pin_init(&pin1, (uint16_t *)&PORTG, (uint16_t *)&TRISG, (uint16_t *)NULL,
-         8, -1, 8, 19, (uint16_t *)&RPOR9);
-pin_init(&pin2, (uint16_t *)&PORTB, (uint16_t *)&TRISB, (uint16_t *)&ANSB,
-         6, 6, 0, 6, (uint16_t *)&RPOR3);
-pin_init(&pin3, (uint16_t *)&PORTB, (uint16_t *)&TRISB, (uint16_t *)&ANSB,
-         7, 7, 8, 7, (uint16_t *)&RPOR3);
+void init_extra_pins() {
+    pin_init(&pin0, (uint16_t *)&PORTG, (uint16_t *)&TRISG, (uint16_t *)NULL,
+             9, -1, 8, 27, (uint16_t *)&RPOR13);
+    pin_init(&pin1, (uint16_t *)&PORTG, (uint16_t *)&TRISG, (uint16_t *)NULL,
+             8, -1, 8, 19, (uint16_t *)&RPOR9);
+    pin_init(&pin2, (uint16_t *)&PORTB, (uint16_t *)&TRISB, (uint16_t *)&ANSB,
+             6, 6, 0, 6, (uint16_t *)&RPOR3);
+    pin_init(&pin3, (uint16_t *)&PORTB, (uint16_t *)&TRISB, (uint16_t *)&ANSB,
+             7, 7, 8, 7, (uint16_t *)&RPOR3);
 
-_PIN *LIMIT_Y_FRONT_PIN, *LIMIT_Y_BACK_PIN;
-LIMIT_Y_FRONT_PIN = &pin0;
-LIMIT_Y_BACK_PIN = &pin1;
+    LIMIT_Y_FRONT_PIN = &pin0;
+    LIMIT_Y_BACK_PIN = &pin1;
+    RELAY_PIN = &pin2;
 
-pin_digitalIn(&D[LIMIT_X_LEFT_PIN]);
-pin_digitalIn(&D[LIMIT_X_RIGHT_PIN]);
-pin_digitalIn(LIMIT_Y_FRONT_PIN);
-pin_digitalIn(LIMIT_Y_BACK_PIN);
-
+    pin_digitalIn(&D[LIMIT_X_LEFT_PIN]);
+    pin_digitalIn(&D[LIMIT_X_RIGHT_PIN]);
+    pin_digitalIn(LIMIT_Y_FRONT_PIN);
+    pin_digitalIn(LIMIT_Y_BACK_PIN);
+    pin_digitalOut(RELAY_PIN);
+}
 
 // Joystick tracker
 _POTENTIOMETER_TRACKER PotTracker;
@@ -142,14 +145,10 @@ void track_pots(_TIMER *self) {
 // Coin tracker callback
 void (*coin_callback)(void);
 
-void alert_main_pic(void) {
-    pin_set(&D[MAIN_PIC_PIN]);
-}
-
 void init_coin_tracking(void (*callback)(void)) {
     coin_callback = callback;
     pin_digitalIn(&D[COIN_READ_PIN]);
-    pin_digitalOut(&D[MAIN_PIC_PIN]);  //pin connecting this pic to the main pic
+    pin_digitalOut(&D[SCORE_START_STOP_PIN]);  //pin connecting this pic to the main pic
 
     // Coin interrupt
     INTCON2bits.INT0EP = 0; // interrupt 0 fires on pos edge
@@ -167,7 +166,7 @@ void __attribute__((interrupt, auto_psv)) _INT0Interrupt(void) {
 void (*ball_callback)(int);
 
 void end_game(int win) {
-    pin_clear(&D[MAIN_PIC_PIN]);
+    pin_clear(&D[SCORE_START_STOP_PIN]);
     if (win) {
         //do stuff related to win
     } else if {
