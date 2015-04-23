@@ -108,25 +108,25 @@ void setMotor() {
 
 void zeroAxes() {
     // Go to hardcoded Z value
-    pin_write(&D[Z_MOTOR_PIN], 2 * Z_STEP_SIZE);
+    pin_write(&D[Z_MOTOR_PIN], 6 * Z_STEP_SIZE);
 
     // Drive X to limit
     pin_write(&D[X_MOTOR_TRISTATE], 614 << 6);
     pin_set(&D[X_MOTOR_A_PIN]);
     pin_clear(&D[X_MOTOR_B_PIN]);
     while (!pin_read(&D[LIMIT_X_RIGHT_PIN])) {
-        // Hang until done
+        // printf("X right limit switch: %d\n", pin_read(&D[LIMIT_X_RIGHT_PIN]));
     }
     pin_clear(&D[X_MOTOR_A_PIN]);
 
     // // Drive Y to limit
-    pin_write(&D[Y_MOTOR_TRISTATE], 614 << 6);
-    pin_clear(&D[Y_MOTOR_A_PIN]);
-    pin_set(&D[Y_MOTOR_B_PIN]);
-    while (!pin_read(LIMIT_Y_FRONT_PIN)) {
-        // Hang until done
-    }
+    pin_write(&D[Y_MOTOR_TRISTATE], 700 << 6);
+    pin_set(&D[Y_MOTOR_A_PIN]);
     pin_clear(&D[Y_MOTOR_B_PIN]);
+    while (!pin_read(LIMIT_Y_FRONT_PIN)) {
+        // printf("Y front limit switch: %d\n", pin_read(LIMIT_Y_FRONT_PIN));
+    }
+    pin_clear(&D[Y_MOTOR_A_PIN]);
 }
 
 // ---------------------------------------------------------------------------
@@ -188,10 +188,10 @@ int16_t main(void) {
             printf("\tX: %d\n", get_x());
             printf("\tY: %d\n", get_y());
             printf("\tZ: %d\n", get_z());
-            printf("\tX left limit switch: %d\n", leftLimit);
-            printf("\tX right limit switch: %d\n", rightLimit);
-            printf("\tY front limit switch: %d\n", frontLimit);
-            printf("\tY back limit switch: %d\n", backLimit);
+            // printf("\tX left limit switch: %d\n", leftLimit);
+            // printf("\tX right limit switch: %d\n", rightLimit);
+            // printf("\tY front limit switch: %d\n", frontLimit);
+            // printf("\tY back limit switch: %d\n", backLimit);
         }
     }
 }

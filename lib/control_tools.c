@@ -36,6 +36,7 @@ void init_extra_pins() {
     pin_digitalIn(LIMIT_Y_FRONT_PIN);
     pin_digitalIn(LIMIT_Y_BACK_PIN);
     pin_digitalOut(RELAY_PIN);
+    pin_clear(RELAY_PIN);
 }
 
 // Joystick tracker
