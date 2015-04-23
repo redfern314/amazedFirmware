@@ -11,50 +11,28 @@
 
 #ifndef SCORE_PIC
 
-// X limit callback
-int (*x_callback)(void);
-// Y limit callback
-int (*y_callback)(void);
+// Limit switch initialization
+// These pins are numbered from the barrel jack
+_PIN pin0, pin1, pin2, pin3;
 
-// NOTE: limit switch line was very noisy, caused all sort of extraneous
-//       interrupts. For now, will use polling
-void init_limit_tracking(int (*x_cb)(void), int (*y_cb)(void)) {
-    x_callback = x_cb;
-    y_callback = y_cb;
+pin_init(&pin0, (uint16_t *)&PORTG, (uint16_t *)&TRISG, (uint16_t *)NULL,
+         9, -1, 8, 27, (uint16_t *)&RPOR13);
+pin_init(&pin1, (uint16_t *)&PORTG, (uint16_t *)&TRISG, (uint16_t *)NULL,
+         8, -1, 8, 19, (uint16_t *)&RPOR9);
+pin_init(&pin2, (uint16_t *)&PORTB, (uint16_t *)&TRISB, (uint16_t *)&ANSB,
+         6, 6, 0, 6, (uint16_t *)&RPOR3);
+pin_init(&pin3, (uint16_t *)&PORTB, (uint16_t *)&TRISB, (uint16_t *)&ANSB,
+         7, 7, 8, 7, (uint16_t *)&RPOR3);
 
-    pin_digitalIn(&D[LIMIT_X_LEFT_PIN]);
-    pin_digitalIn(&D[LIMIT_X_RIGHT_PIN]);
-    // pin_digitalIn(&D[LIMIT_Y_BACK_PIN]);   // No interrupts for Y yet
-    // pin_digitalIn(&D[LIMIT_Y_FRONT_PIN]);  // No interrupts for Y yet
+_PIN *LIMIT_Y_FRONT_PIN, *LIMIT_Y_BACK_PIN;
+LIMIT_Y_FRONT_PIN = &pin0;
+LIMIT_Y_BACK_PIN = &pin1;
 
-    // Configure an external interrupt on the coin input pin and for each of the 2 software limit switches
-    __builtin_write_OSCCONL(OSCCON&0xBF);
-    RPINR0bits.INT1R = 20; // equivalent to RPINR0 |= (20 << 8), sets INT1 to RP20 / D0
-    RPINR1bits.INT2R = 25; // equivalent to RPINR1 |= (25 << 8), sets INT2 to RP25 / D1
-    __builtin_write_OSCCONL(OSCCON|0x40);
+pin_digitalIn(&D[LIMIT_X_LEFT_PIN]);
+pin_digitalIn(&D[LIMIT_X_RIGHT_PIN]);
+pin_digitalIn(LIMIT_Y_FRONT_PIN);
+pin_digitalIn(LIMIT_Y_BACK_PIN);
 
-    // Left limit switch interrupt
-    INTCON2bits.INT1EP = 0; // interrupt 1 fires on pos edge
-    IFS1bits.INT1IF = 0; // disable interrupt 1 flag
-    IEC1bits.INT1IE = 1; // enable external interrupt 1
-
-    // Right limit switch interrupt
-    INTCON2bits.INT2EP = 0; // interrupt 2 fires on pos edge
-    IFS1bits.INT2IF = 0; // disable interrupt 2 flag
-    IEC1bits.INT2IE = 1; // enable external interrupt 2
-}
-
-// Interrupt handler for INT1 (Left X limit switch)
-void __attribute__((interrupt, auto_psv)) _INT1Interrupt(void) {
-    IFS1bits.INT1IF = 0; // disable interrupt 1 flag
-    x_callback();
-}
-
-// Interrupt handler for INT2 (Right X limit switch)
-void __attribute__((interrupt, auto_psv)) _INT2Interrupt(void) {
-    IFS1bits.INT2IF = 0; // disable interrupt 2 flag
-    x_callback();
-}
 
 // Joystick tracker
 _POTENTIOMETER_TRACKER PotTracker;

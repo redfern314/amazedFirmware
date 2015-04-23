@@ -15,8 +15,6 @@
 // Limit switch input pins
 #define LIMIT_X_LEFT_PIN    0
 #define LIMIT_X_RIGHT_PIN   1
-// #define LIMIT_Y_BACK_PIN    2
-// #define LIMIT_Y_FRONT_PIN   3
 
 // Ball tracker
 #define WIN_BALL_PIN        12   // Digital pin for interrupt

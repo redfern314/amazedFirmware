@@ -83,17 +83,14 @@ void setMotor() {
 
     // // set the motor direction based on y-axis pot
     motorYDirection = get_y(); // update the direction from control_tools
-    // frontLimit = pin_read(&D[LIMIT_X_FRONT_PIN]);
-    // backLimit = pin_read(&D[LIMIT_X_BACK_PIN]);
+    frontLimit = pin_read(LIMIT_Y_FRONT_PIN);
+    backLimit = pin_read(LIMIT_Y_BACK_PIN);
 
-    if (motorYDirection != prevMotorYDirection) {
-    // if (motorXDirection != prevMotorXDirection || leftLimit || rightLimit) {
-        if (motorYDirection < 0) {
-        // if (motorYDirection < 0 && !frontLimit) {
+    if (motorXDirection != prevMotorXDirection || leftLimit || rightLimit) {
+        if (motorYDirection < 0 && !frontLimit) {
             pin_set(&D[Y_MOTOR_A_PIN]);
             pin_clear(&D[Y_MOTOR_B_PIN]);
-        } else if (motorYDirection > 0) {
-        // } else if (motorYDirection > 0 && !backLimit) {
+        } else if (motorYDirection > 0 && !backLimit) {
             pin_set(&D[Y_MOTOR_B_PIN]);
             pin_clear(&D[Y_MOTOR_A_PIN]);
         } else {
@@ -124,15 +121,14 @@ void zeroAxes() {
     }
     pin_clear(&D[X_MOTOR_A_PIN]);
 
-    // UNCOMMENT WHEN Y LIMIT SWITCH ES ARE IMPLEMENTED
     // // Drive Y to limit
-    // pin_write(&D[Y_MOTOR_TRISTATE], 614 << 6);
-    // pin_clear(&D[Y_MOTOR_A_PIN]);
-    // pin_set(&D[Y_MOTOR_B_PIN]);
-    // while (!pin_read(&D[LIMIT_Y_FRONT_PIN])) {
-    //     // Hang until done
-    // }
-    // pin_clear(&D[Y_MOTOR_B_PIN]);
+    pin_write(&D[Y_MOTOR_TRISTATE], 614 << 6);
+    pin_clear(&D[Y_MOTOR_A_PIN]);
+    pin_set(&D[Y_MOTOR_B_PIN]);
+    while (!pin_read(LIMIT_Y_FRONT_PIN) {
+        // Hang until done
+    }
+    pin_clear(&D[Y_MOTOR_B_PIN]);
 }
 
 // ---------------------------------------------------------------------------
