@@ -166,15 +166,6 @@ void __attribute__((interrupt, auto_psv)) _INT0Interrupt(void) {
 // Ball tracker callback
 void (*ball_callback)(int);
 
-void end_game(int win) {
-    pin_clear(&D[SCORE_START_STOP_PIN]);
-    if (win) {
-        //do stuff related to win
-    } else if {
-        //do stuff related to not win
-    }
-}
-
 void init_ball_tracking(void (*callback)(int)) {
     ball_callback = callback;
     pin_digitalIn(&D[WIN_BALL_PIN]);
