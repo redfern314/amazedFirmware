@@ -5,20 +5,20 @@
 
 #include <stdint.h>
 #include "timer.h"
+#include "pin.h"
 
 
-// Coin tracker
-#define COIN_READ_PIN       5    // Analog pin
-#define TRACK_COIN_FREQ     20   // 20 Hz. Too fast gives false positives
-#define COIN_VOLTAGE_LEVEL  40   // Voltage level that indicates coin
+// Start/Stop pins
+#define MAIN_START_STOP_PIN      2  // Digital pin connected to Score PIC
+#define SCORE_START_STOP_PIN     0  // Digital pin connected to Main PIC
+
+
+#ifndef SCORE_PIC
 
 // Limit switch input pins
 #define LIMIT_X_LEFT_PIN    0
 #define LIMIT_X_RIGHT_PIN   1
-
-// Ball tracker
-#define WIN_BALL_PIN        12   // Digital pin for interrupt
-#define LOSE_BALL_PIN       13   // Digital pin for interrupt
+extern _PIN *LIMIT_Y_FRONT_PIN, *LIMIT_Y_BACK_PIN, *RELAY_PIN;
 
 // X-Y-Z tracker
 #define X_PIN_IN            2    // Analog pin
@@ -44,10 +44,17 @@
 
 #define Z_STEP_SIZE         4681 // (65535 - 1) / 14
 
-// 7 segment
-#define SPI_IN              0    // Pin for digit1
-#define SPI_OUT             1    // Pin for digit2
-#define SPI_CLK             2    // Pin for digit3
+void init_extra_pins();
+void init_pot_tracking();
+int get_x();
+int get_y();
+int get_z();
+void track_pots();
+
+#endif
+
+
+#ifdef SCORE_PIC
 
 // Coin tracker
 typedef struct _COIN_TRACKER {
@@ -57,16 +64,21 @@ typedef struct _COIN_TRACKER {
     int total_coin_count;
 } _COIN_TRACKER;
 
-#ifndef SCORE_PIC
-void init_limit_tracking();
-void init_pot_tracking();
-int get_x();
-int get_y();
-int get_z();
-void track_pots();
-#endif
+// Ball tracker
+#define WIN_BALL_PIN        12   // Digital pin for interrupt
+#define LOSE_BALL_PIN       13   // Digital pin for interrupt
 
-#ifdef SCORE_PIC
+// Coin tracker
+#define COIN_READ_PIN       5    // Analog pin
+#define TRACK_COIN_FREQ     20   // 20 Hz. Too fast gives false positives
+#define COIN_VOLTAGE_LEVEL  40   // Voltage level that indicates coin
+
+// 7 segment
+#define SPI_IN              0    // Pin for digit1
+#define SPI_OUT             1    // Pin for digit2
+#define SPI_CLK             2    // Pin for digit3
+
+
 void init_coin_tracking(void (*callback)(void));
 void init_ball_tracking(void (*callback)(int));
 void init_seven_segment();

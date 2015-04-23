@@ -31,8 +31,6 @@
 #define motorYDutyCycle         860
 
 // TEMPORARY VALUE, WILL NEED TO BE MOVED TO FIT Y LIMIT SWITCHES
-#define START_STOP_PIN          2  // Digital pin connected to Score PIC
-
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -86,7 +84,7 @@ void setMotor() {
     frontLimit = pin_read(LIMIT_Y_FRONT_PIN);
     backLimit = pin_read(LIMIT_Y_BACK_PIN);
 
-    if (motorXDirection != prevMotorXDirection || leftLimit || rightLimit) {
+    if (motorYDirection != prevMotorYDirection || frontLimit || backLimit) {
         if (motorYDirection < 0 && !frontLimit) {
             pin_set(&D[Y_MOTOR_A_PIN]);
             pin_clear(&D[Y_MOTOR_B_PIN]);
@@ -125,7 +123,7 @@ void zeroAxes() {
     pin_write(&D[Y_MOTOR_TRISTATE], 614 << 6);
     pin_clear(&D[Y_MOTOR_A_PIN]);
     pin_set(&D[Y_MOTOR_B_PIN]);
-    while (!pin_read(LIMIT_Y_FRONT_PIN) {
+    while (!pin_read(LIMIT_Y_FRONT_PIN)) {
         // Hang until done
     }
     pin_clear(&D[Y_MOTOR_B_PIN]);
@@ -148,6 +146,8 @@ void setup() {
     led_on(&led1); led_on(&led3);
     setup_motor_shield();
 
+    init_extra_pins();
+
     init_pot_tracking();
 	timer_every(&timer3, 1.0 / TRACK_POT_FREQ, track_pots);
 
@@ -164,7 +164,7 @@ void setup() {
     timer_setPeriod(&timer1, 0.1);
     timer_start(&timer1);
 
-    pin_digitalIn(&D[START_STOP_PIN]);
+    pin_digitalIn(&D[MAIN_START_STOP_PIN]);
     printf("Starting up\n");
 }
 
@@ -174,23 +174,24 @@ int16_t main(void) {
     while (1) {       
         if (timer_flag(&timer1)) {
             timer_lower(&timer1);
-            if (pin_read(&D[START_STOP_PIN]) && !vacuumOn) {
+            if (pin_read(&D[MAIN_START_STOP_PIN]) && !vacuumOn) {
                 vacuumOn = 1;
                 timer_disableInterrupt(&timer2);
                 zeroAxes();
                 timer_enableInterrupt(&timer2);
-            } else if (!pin_read(&D[START_STOP_PIN]) && vacuumOn) {
+                pin_set(RELAY_PIN);
+            } else if (!pin_read(&D[MAIN_START_STOP_PIN]) && vacuumOn) {
                 vacuumOn = 0;
+                pin_clear(RELAY_PIN);
             }
             printf("Control inputs:\n");
             printf("\tX: %d\n", get_x());
             printf("\tY: %d\n", get_y());
             printf("\tZ: %d\n", get_z());
-            // printf("\tX left limit switch: %d\n", leftLimit);
-            // printf("\tX right limit switch: %d\n", rightLimit);
-            // printf("\tY front limit switch: %d\n", frontLimit);
-            // printf("\tY back limit switch: %d\n", backLimit);
-
+            printf("\tX left limit switch: %d\n", leftLimit);
+            printf("\tX right limit switch: %d\n", rightLimit);
+            printf("\tY front limit switch: %d\n", frontLimit);
+            printf("\tY back limit switch: %d\n", backLimit);
         }
     }
 }

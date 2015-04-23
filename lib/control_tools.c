@@ -15,25 +15,28 @@
 // Limit switch initialization
 // These pins are numbered from the barrel jack
 _PIN pin0, pin1, pin2, pin3;
+_PIN *LIMIT_Y_FRONT_PIN, *LIMIT_Y_BACK_PIN, *RELAY_PIN;
 
-pin_init(&pin0, (uint16_t *)&PORTG, (uint16_t *)&TRISG, (uint16_t *)NULL,
-         9, -1, 8, 27, (uint16_t *)&RPOR13);
-pin_init(&pin1, (uint16_t *)&PORTG, (uint16_t *)&TRISG, (uint16_t *)NULL,
-         8, -1, 8, 19, (uint16_t *)&RPOR9);
-pin_init(&pin2, (uint16_t *)&PORTB, (uint16_t *)&TRISB, (uint16_t *)&ANSB,
-         6, 6, 0, 6, (uint16_t *)&RPOR3);
-pin_init(&pin3, (uint16_t *)&PORTB, (uint16_t *)&TRISB, (uint16_t *)&ANSB,
-         7, 7, 8, 7, (uint16_t *)&RPOR3);
+void init_extra_pins() {
+    pin_init(&pin0, (uint16_t *)&PORTG, (uint16_t *)&TRISG, (uint16_t *)NULL,
+             9, -1, 8, 27, (uint16_t *)&RPOR13);
+    pin_init(&pin1, (uint16_t *)&PORTG, (uint16_t *)&TRISG, (uint16_t *)NULL,
+             8, -1, 8, 19, (uint16_t *)&RPOR9);
+    pin_init(&pin2, (uint16_t *)&PORTB, (uint16_t *)&TRISB, (uint16_t *)&ANSB,
+             6, 6, 0, 6, (uint16_t *)&RPOR3);
+    pin_init(&pin3, (uint16_t *)&PORTB, (uint16_t *)&TRISB, (uint16_t *)&ANSB,
+             7, 7, 8, 7, (uint16_t *)&RPOR3);
 
-_PIN *LIMIT_Y_FRONT_PIN, *LIMIT_Y_BACK_PIN;
-LIMIT_Y_FRONT_PIN = &pin0;
-LIMIT_Y_BACK_PIN = &pin1;
+    LIMIT_Y_FRONT_PIN = &pin0;
+    LIMIT_Y_BACK_PIN = &pin1;
+    RELAY_PIN = &pin2;
 
-pin_digitalIn(&D[LIMIT_X_LEFT_PIN]);
-pin_digitalIn(&D[LIMIT_X_RIGHT_PIN]);
-pin_digitalIn(LIMIT_Y_FRONT_PIN);
-pin_digitalIn(LIMIT_Y_BACK_PIN);
-
+    pin_digitalIn(&D[LIMIT_X_LEFT_PIN]);
+    pin_digitalIn(&D[LIMIT_X_RIGHT_PIN]);
+    pin_digitalIn(LIMIT_Y_FRONT_PIN);
+    pin_digitalIn(LIMIT_Y_BACK_PIN);
+    pin_digitalOut(RELAY_PIN);
+}
 
 // Joystick tracker
 _POTENTIOMETER_TRACKER PotTracker;
