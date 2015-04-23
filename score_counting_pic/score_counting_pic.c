@@ -7,6 +7,7 @@
 #include "uart.h"
 #include "ui.h"
 #include "oc.h"
+#include "spi.h"
 #include <stdio.h>
 
 // Tests out the control_tools library
@@ -30,9 +31,12 @@ void setup() {
     init_uart();
     init_ui();
     init_oc();
+    init_spi();
     led_on(&led1); led_on(&led2); led_on(&led3);
 
-    init_game();
+    init_seven_segment();
+
+    timer_every(&timer1,.1,display_elapsed_time);
 
     // init_ball_tracking(&accept_ball);
 
