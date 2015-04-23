@@ -9,8 +9,8 @@
 
 
 // Start/Stop pins
-#define MAIN_START_STOP_PIN      2  // Digital pin connected to Score PIC
-#define SCORE_START_STOP_PIN     0  // Digital pin connected to Main PIC
+#define MAIN_START_STOP_PIN      2  // Digital pin connected to Main PIC
+#define SCORE_START_STOP_PIN     0  // Digital pin connected to Score PIC
 
 
 #ifndef SCORE_PIC
@@ -74,9 +74,9 @@ typedef struct _COIN_TRACKER {
 #define COIN_VOLTAGE_LEVEL  40   // Voltage level that indicates coin
 
 // 7 segment
-#define SPI_IN              0    // Pin for digit1
-#define SPI_OUT             1    // Pin for digit2
-#define SPI_CLK             2    // Pin for digit3
+#define SPI_IN              1    // Pin for digit1
+#define SPI_OUT             2    // Pin for digit2
+#define SPI_CLK             3    // Pin for digit3
 
 
 void init_coin_tracking(void (*callback)(void));

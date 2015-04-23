@@ -24,6 +24,19 @@ void accept_ball(int which_breakbeam) {
     }
 }
 
+void start_game(void) {
+    pin_set(&D[SCORE_START_STOP_PIN]);
+}
+
+void end_game(int win) {
+    pin_clear(&D[SCORE_START_STOP_PIN]);
+    // if (win) {
+    //     //do stuff related to win
+    // } else if {
+    //     //do stuff related to not win
+    // }
+}
+
 void setup() {
 	init_clock();
     init_pin();
@@ -34,11 +47,13 @@ void setup() {
     init_spi();
     led_on(&led1); led_on(&led2); led_on(&led3);
 
+    init_coin_tracking(&start_game);
     init_seven_segment();
+
 
     timer_every(&timer1,.1,display_elapsed_time);
 
-    // init_ball_tracking(&accept_ball);
+    init_ball_tracking(&end_game);
 
     // timer_setPeriod(&timer1, 0.5);
     // timer_start(&timer1);
