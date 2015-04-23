@@ -133,9 +133,7 @@ float timer_freq(_TIMER *self) {
 }
 
 float timer_time(_TIMER *self) {
-    uint16_t prescalar = (peek(self->TxCON)&0x0030)>>4;
-
-    return timer_multipliers[prescalar]*((float)peek(self->PRx)+1.);
+    return timer_period(self)*(float)timer_read(self);
 }
 
 void timer_start(_TIMER *self) {

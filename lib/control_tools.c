@@ -7,10 +7,10 @@
 #include "control_tools.h"
 #include "pin.h"
 #include "oc.h"
+#include "spi.h"
 
 
 #ifndef SCORE_PIC
-
 // X limit callback
 int (*x_callback)(void);
 // Y limit callback
@@ -160,6 +160,26 @@ void track_pots(_TIMER *self) {
 
 
 #ifdef SCORE_PIC
+// Coin tracker callback
+void (*coin_callback)(void);
+
+void init_coin_tracking(void (*callback)(void)) {
+    coin_callback = callback;
+    pin_digitalIn(&D[COIN_READ_PIN]);
+    pin_digitalIn(&D[9]);
+    pin_digitalIn(&D[10]);
+
+    // Configure an external interrupt on the coin input pin and for each of the 2 software limit switches
+    __builtin_write_OSCCONL(OSCCON&0xBF);
+    RPINR0bits.INT1R = 22; // equivalent to RPINR0 |= (22 << 8), sets INT1 to RP22 / D13
+    __builtin_write_OSCCONL(OSCCON|0x40);
+
+    // Coin interrupt
+    INTCON2bits.INT1EP = 0; // interrupt 1 fires on pos edge
+    IFS1bits.INT1IF = 0; // disable interrupt 1 flag
+    IEC1bits.INT1IE = 1; // enable external interrupt 1
+}
+
 // Ball tracker callback
 void (*ball_callback)(int);
 
@@ -194,6 +214,17 @@ void __attribute__((interrupt, auto_psv)) _INT1Interrupt(void) {
 void __attribute__((interrupt, auto_psv)) _INT2Interrupt(void) {
     IFS1bits.INT2IF = 0; // disable interrupt 2 flag
     ball_callback(0);
+}
+
+void init_seven_segment() {
+    spi_open(&spi1, &D[SPI_IN], &D[SPI_OUT], &D[SPI_CLK], 10000000.);
+
+    timer_start(&timer2);
+}
+
+void display_elapsed_time(_TIMER *self) {
+    uint16_t sampled_time = (uint16_t) timer_time(&timer2);
+    spi_transfer(&spi1,sampled_time);
 }
 
 #endif
