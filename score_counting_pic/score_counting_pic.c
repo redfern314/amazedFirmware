@@ -10,8 +10,6 @@
 #include "spi.h"
 #include <stdio.h>
 
-// Tests out the control_tools library
-
 int win_balls_seen = 0;
 int lose_balls_seen = 0;
 
@@ -26,10 +24,12 @@ void accept_ball(int which_breakbeam) {
 
 void start_game(void) {
     pin_set(&D[SCORE_START_STOP_PIN]);
+    led_on(&led3);
 }
 
 void end_game(int win) {
     pin_clear(&D[SCORE_START_STOP_PIN]);
+    led_off(&led3);
     // if (win) {
     //     //do stuff related to win
     // } else if {
@@ -45,18 +45,13 @@ void setup() {
     init_ui();
     init_oc();
     init_spi();
-    led_on(&led1); led_on(&led2); led_on(&led3);
+    led_on(&led1); led_on(&led2);
 
     init_coin_tracking(&start_game);
-    init_seven_segment();
-
 
     timer_every(&timer1,.1,display_elapsed_time);
-
+    init_seven_segment();  // Uses &timer2
     init_ball_tracking(&end_game);
-
-    // timer_setPeriod(&timer1, 0.5);
-    // timer_start(&timer1);
 }
 
 int16_t main(void) {

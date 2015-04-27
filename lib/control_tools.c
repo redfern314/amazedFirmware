@@ -79,37 +79,11 @@ int get_y() {
 
 }
 
-int get_z() {
-    int z = PotTracker.z_accumulator;
-    if (z <= 67) {
-        return 0;
-    } else if (z <= 134) {
-        return 1;
-    } else if (z <= 201) {
-        return 2;
-    } else if (z <= 268) {
-        return 3;
-    } else if (z <= 335) {
-        return 4;
-    } else if (z <= 402) {
-        return 5;
-    } else if (z <= 469) {
-        return 6;
-    } else if (z <= 536) {
-        return 7;
-    } else if (z <= 603) {
-        return 8;
-    } else if (z <= 670) {
-        return 9;
-    } else if (z <= 737) {
-        return 10;
-    } else if (z <= 804) {
-        return 11;
-    } else if (z <= 871) {
-        return 12;
-    } else {
-        return 13;
-    }
+uint16_t get_z() {
+    uint16_t z = PotTracker.z_accumulator;
+    uint16_t val = (z/67.0)*Z_STEP_SIZE; // be careful here - division in an interrupt!
+    // printf("%u %u %u\n",z,(z>>6),val);
+    return val;
 }
 
 void init_pot_tracking() {
@@ -160,42 +134,45 @@ void init_coin_tracking(void (*callback)(void)) {
 // Interrupt handler for INT0
 void __attribute__((interrupt, auto_psv)) _INT0Interrupt(void) {
     IFS0bits.INT0IF = 0; // disable interrupt 0 flag
+    printf("COIN\n");
     coin_callback();
 }
 
 // Ball tracker callback
 void (*ball_callback)(int);
 
+int last_win_value;
+int last_lose_value;
+
 void init_ball_tracking(void (*callback)(int)) {
     ball_callback = callback;
-    pin_digitalIn(&D[WIN_BALL_PIN]);
-    pin_digitalIn(&D[LOSE_BALL_PIN]);
-
-    // Configure an interrupt on the ball input pin
-    __builtin_write_OSCCONL(OSCCON&0xBF);
-    RPINR0bits.INT1R = 22; // equivalent to RPINR0 |= (22 << 8), sets INT1 to RP22 / D13
-    RPINR1bits.INT2R = 23; // equivalent to RPINR1 |= (3 << 8), sets INT2 to RP3 / D12
-    __builtin_write_OSCCONL(OSCCON|0x40);
-
-    INTCON2bits.INT1EP = 0; // interrupt 1 fires on neg edge
-    IFS1bits.INT1IF = 0; // disable interrupt 1 flag
-    IEC1bits.INT1IE = 1; // enable external interrupt 1
-
-    INTCON2bits.INT2EP = 0; // interrupt 2 fires on neg edge
-    IFS1bits.INT2IF = 0; // disable interrupt 2 flag
-    IEC1bits.INT2IE = 1; // enable external interrupt 
+    pin_analogIn(&A[WIN_BALL_PIN]);
+    pin_analogIn(&A[LOSE_BALL_PIN]);
+    last_win_value = 0;
+    last_lose_value = 0;
+    timer_every(&timer3, 0.01, track_balls);
 }
 
-// Interrupt handler for INT1
-void __attribute__((interrupt, auto_psv)) _INT1Interrupt(void) {
-    IFS1bits.INT1IF = 0; // disable interrupt flag
-    ball_callback(1);
-}
+void track_balls() {
+    int raw_win_value = pin_read(&A[WIN_BALL_PIN]) >> 6;
+    int raw_lose_value = pin_read(&A[LOSE_BALL_PIN]) >> 6;
+    if (raw_win_value > WIN_DIODE_LEVEL) {
+        if (!last_win_value) {
+            ball_callback(1);
+            last_win_value = 1;
+        }
+    } else {
+        last_win_value = 0;
+    }
 
-// Interrupt handler for INT2
-void __attribute__((interrupt, auto_psv)) _INT2Interrupt(void) {
-    IFS1bits.INT2IF = 0; // disable interrupt 2 flag
-    ball_callback(0);
+    if (raw_lose_value > LOSE_DIODE_LEVEL) {
+        if (!last_lose_value) {
+            ball_callback(0);
+            last_lose_value = 1;
+        }
+    } else {
+        last_lose_value = 0;
+    }
 }
 
 void init_seven_segment(void) {
@@ -205,7 +182,7 @@ void init_seven_segment(void) {
 
 void display_elapsed_time(_TIMER *self) {
     uint16_t sampled_time = (uint16_t) timer_time(&timer2);
-    spi_transfer(&spi1,sampled_time);
+    spi_transfer(&spi1, sampled_time);
 }
 
 #endif

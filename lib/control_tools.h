@@ -8,12 +8,8 @@
 #include "pin.h"
 
 
-// Start/Stop pins
-#define MAIN_START_STOP_PIN      2  // Digital pin connected to Main PIC
-#define SCORE_START_STOP_PIN     0  // Digital pin connected to Score PIC
-
-
 #ifndef SCORE_PIC
+#define MAIN_START_STOP_PIN      2  // Digital pin connected to Main PIC
 
 // Limit switch input pins
 #define LIMIT_X_LEFT_PIN    0
@@ -24,7 +20,7 @@ extern _PIN *LIMIT_Y_FRONT_PIN, *LIMIT_Y_BACK_PIN, *RELAY_PIN;
 #define X_PIN_IN            2    // Analog pin
 #define Y_PIN_IN            1    // Analog pin
 #define KNOB_PIN_IN         0    // Analog pin
-#define TRACK_POT_FREQ      100  // 100 Hz.
+#define TRACK_POT_FREQ      50  // 100 Hz.
 #define JOYSTICK_MIN        800  // Analog voltage
 #define JOYSTICK_MAX        900  // Analog voltage
 #define JOYSTICK_MID        870  // Analog voltage
@@ -48,13 +44,14 @@ void init_extra_pins();
 void init_pot_tracking();
 int get_x();
 int get_y();
-int get_z();
+uint16_t get_z();
 void track_pots();
 
 #endif
 
 
 #ifdef SCORE_PIC
+#define SCORE_START_STOP_PIN     0  // Digital pin connected to Score PIC
 
 // Coin tracker
 typedef struct _COIN_TRACKER {
@@ -65,11 +62,13 @@ typedef struct _COIN_TRACKER {
 } _COIN_TRACKER;
 
 // Ball tracker
-#define WIN_BALL_PIN        12   // Digital pin for interrupt
-#define LOSE_BALL_PIN       13   // Digital pin for interrupt
+#define WIN_BALL_PIN        0   // ANALOG pin for polling
+#define WIN_DIODE_LEVEL     775 // Analog voltage to trigger for ball crossing
+#define LOSE_BALL_PIN       1   // ANALOG pin for polling
+#define LOSE_DIODE_LEVEL    500 // Analog voltage to trigger for ball crossing
 
 // Coin tracker
-#define COIN_READ_PIN       5    // Analog pin
+#define COIN_READ_PIN       10   // Digital pin
 #define TRACK_COIN_FREQ     20   // 20 Hz. Too fast gives false positives
 #define COIN_VOLTAGE_LEVEL  40   // Voltage level that indicates coin
 
@@ -78,9 +77,9 @@ typedef struct _COIN_TRACKER {
 #define SPI_OUT             2    // Pin for digit2
 #define SPI_CLK             3    // Pin for digit3
 
-
 void init_coin_tracking(void (*callback)(void));
 void init_ball_tracking(void (*callback)(int));
+void track_balls();
 void init_seven_segment();
 void display_elapsed_time();
 #endif
