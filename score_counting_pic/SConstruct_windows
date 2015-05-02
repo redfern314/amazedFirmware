@@ -18,7 +18,7 @@ list = Builder(action = 'xc16-objdump -S -D $SOURCE > $TARGET',
                src_suffix = 'elf')
 env.Append(BUILDERS = {'List' : list})
 
-env.Program('score_counting_pic2', ['score_counting_pic2.c',
+env.Program('score_counting_pic', ['score_counting_pic.c',
                       '../lib/timer.c',
                       '../lib/ui.c',
                       '../lib/pin.c',
@@ -26,7 +26,7 @@ env.Program('score_counting_pic2', ['score_counting_pic2.c',
                       '../lib/spi.c',
                       '../lib/control_tools.c',
                       '../lib/uart.c'])
-env.Hex('score_counting_pic2')
-env.List('score_counting_pic2')
+env.Hex('score_counting_pic')
+env.List('score_counting_pic')
 
 
