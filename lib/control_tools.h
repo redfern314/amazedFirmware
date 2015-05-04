@@ -62,9 +62,9 @@ typedef struct _COIN_TRACKER {
 } _COIN_TRACKER;
 
 // Ball tracker
-#define WIN_BALL_PIN        0   // ANALOG pin for polling
-#define WIN_DIODE_LEVEL     775 // Analog voltage to trigger for ball crossing
-#define LOSE_BALL_PIN       1   // ANALOG pin for polling
+#define WIN_BALL_PIN        1   // ANALOG pin for polling
+#define WIN_DIODE_LEVEL     600 // Analog voltage to trigger for ball crossing
+#define LOSE_BALL_PIN       0   // ANALOG pin for polling
 #define LOSE_DIODE_LEVEL    500 // Analog voltage to trigger for ball crossing
 
 // Coin tracker
