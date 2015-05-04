@@ -56,8 +56,9 @@ uint8_t vacuumOn = 0;
 
 void setMotor() {
     // set the servo position based on z-axis pot
-    int z = get_z();
-    pin_write(&D[Z_MOTOR_PIN], z * Z_STEP_SIZE);
+    uint16_t z = get_z();
+    pin_write(&D[Z_MOTOR_PIN], z);
+    // printf("%f\n", z);
 
     // set the motor direction based on x-axis pot
     motorXDirection = get_x(); // update the direction from control_tools
@@ -108,25 +109,25 @@ void setMotor() {
 
 void zeroAxes() {
     // Go to hardcoded Z value
-    pin_write(&D[Z_MOTOR_PIN], 2 * Z_STEP_SIZE);
+    pin_write(&D[Z_MOTOR_PIN], 6 * Z_STEP_SIZE);
 
     // Drive X to limit
-    pin_write(&D[X_MOTOR_TRISTATE], 614 << 6);
+    pin_write(&D[X_MOTOR_TRISTATE], 750 << 6);
     pin_set(&D[X_MOTOR_A_PIN]);
     pin_clear(&D[X_MOTOR_B_PIN]);
     while (!pin_read(&D[LIMIT_X_RIGHT_PIN])) {
-        // Hang until done
+        // printf("X right limit switch: %d\n", pin_read(&D[LIMIT_X_RIGHT_PIN]));
     }
     pin_clear(&D[X_MOTOR_A_PIN]);
 
     // // Drive Y to limit
-    pin_write(&D[Y_MOTOR_TRISTATE], 614 << 6);
-    pin_clear(&D[Y_MOTOR_A_PIN]);
-    pin_set(&D[Y_MOTOR_B_PIN]);
-    while (!pin_read(LIMIT_Y_FRONT_PIN)) {
-        // Hang until done
-    }
+    pin_write(&D[Y_MOTOR_TRISTATE], 700 << 6);
+    pin_set(&D[Y_MOTOR_A_PIN]);
     pin_clear(&D[Y_MOTOR_B_PIN]);
+    while (!pin_read(LIMIT_Y_FRONT_PIN)) {
+        // printf("Y front limit switch: %d\n", pin_read(LIMIT_Y_FRONT_PIN));
+    }
+    pin_clear(&D[Y_MOTOR_A_PIN]);
 }
 
 // ---------------------------------------------------------------------------
@@ -143,7 +144,7 @@ void setup() {
     init_uart();
     init_ui();
 
-    led_on(&led1); led_on(&led3);
+    led_on(&led1);
     setup_motor_shield();
 
     init_extra_pins();
@@ -180,18 +181,21 @@ int16_t main(void) {
                 zeroAxes();
                 timer_enableInterrupt(&timer2);
                 pin_set(RELAY_PIN);
+                led_on(&led3);
+
             } else if (!pin_read(&D[MAIN_START_STOP_PIN]) && vacuumOn) {
                 vacuumOn = 0;
                 pin_clear(RELAY_PIN);
+                led_off(&led3);
             }
-            printf("Control inputs:\n");
-            printf("\tX: %d\n", get_x());
-            printf("\tY: %d\n", get_y());
-            printf("\tZ: %d\n", get_z());
-            printf("\tX left limit switch: %d\n", leftLimit);
-            printf("\tX right limit switch: %d\n", rightLimit);
-            printf("\tY front limit switch: %d\n", frontLimit);
-            printf("\tY back limit switch: %d\n", backLimit);
+            // printf("Control inputs:\n");
+            // printf("\tX: %d\n", get_x());
+            // printf("\tY: %d\n", get_y());
+            // printf("\tZ: %d\n", get_z());
+            // printf("\tX left limit switch: %d\n", leftLimit);
+            // printf("\tX right limit switch: %d\n", rightLimit);
+            // printf("\tY front limit switch: %d\n", frontLimit);
+            // printf("\tY back limit switch: %d\n", backLimit);
         }
     }
 }

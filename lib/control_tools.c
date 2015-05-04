@@ -37,6 +37,7 @@ void init_extra_pins() {
     pin_digitalIn(LIMIT_Y_FRONT_PIN);
     pin_digitalIn(LIMIT_Y_BACK_PIN);
     pin_digitalOut(RELAY_PIN);
+    pin_clear(RELAY_PIN);
 }
 
 // Joystick tracker
@@ -79,37 +80,11 @@ int get_y() {
 
 }
 
-int get_z() {
-    int z = PotTracker.z_accumulator;
-    if (z <= 67) {
-        return 0;
-    } else if (z <= 134) {
-        return 1;
-    } else if (z <= 201) {
-        return 2;
-    } else if (z <= 268) {
-        return 3;
-    } else if (z <= 335) {
-        return 4;
-    } else if (z <= 402) {
-        return 5;
-    } else if (z <= 469) {
-        return 6;
-    } else if (z <= 536) {
-        return 7;
-    } else if (z <= 603) {
-        return 8;
-    } else if (z <= 670) {
-        return 9;
-    } else if (z <= 737) {
-        return 10;
-    } else if (z <= 804) {
-        return 11;
-    } else if (z <= 871) {
-        return 12;
-    } else {
-        return 13;
-    }
+uint16_t get_z() {
+    uint16_t z = PotTracker.z_accumulator;
+    uint16_t val = (z/67.0)*Z_STEP_SIZE; // be careful here - division in an interrupt!
+    // printf("%u %u %u\n",z,(z>>6),val);
+    return val;
 }
 
 void init_pot_tracking() {
@@ -161,50 +136,67 @@ void init_coin_tracking(void (*callback)(void)) {
 // Interrupt handler for INT0
 void __attribute__((interrupt, auto_psv)) _INT0Interrupt(void) {
     IFS0bits.INT0IF = 0; // disable interrupt 0 flag
+    printf("COIN\n");
     coin_callback();
 }
+
+int last_win_value;
+int last_lose_value;
 
 // Ball tracker callback
 void (*ball_callback)(int);
 
 void init_ball_tracking(void (*callback)(int)) {
     ball_callback = callback;
-    pin_digitalIn(&D[WIN_BALL_PIN]);
-    pin_digitalIn(&D[LOSE_BALL_PIN]);
+    pin_analogIn(&A[WIN_BALL_PIN]);
+    pin_analogIn(&A[LOSE_BALL_PIN]);
+    last_win_value = 0;
+    last_lose_value = 0;
+    timer_every(&timer3, 0.01, track_balls);
+}
+
+void track_balls() {
+    int raw_win_value = pin_read(&A[WIN_BALL_PIN]) >> 6;
+    int raw_lose_value = pin_read(&A[LOSE_BALL_PIN]) >> 6;
+    if (raw_win_value > WIN_DIODE_LEVEL) {
+        if (!last_win_value) {
+            ball_callback(1);
+            last_win_value = 1;
+        }
+    } else {
+        last_win_value = 0;
+    }
+    if (raw_lose_value > LOSE_DIODE_LEVEL) {
+        if (!last_lose_value) {
+            ball_callback(0);
+            last_lose_value = 1;
+        }
+    } else {
+        last_lose_value = 0;
+    }
+}
+
+// Ball tracker callback
+void (*vacuum_callback)(void);
+
+void init_vacuum_tracking(void (*callback)(void)) {
+    vacuum_callback = callback;
+    pin_digitalIn(&D[VACUUM_READ_PIN]);
 
     // Configure an interrupt on the ball input pin
     __builtin_write_OSCCONL(OSCCON&0xBF);
-    RPINR0bits.INT1R = 22; // equivalent to RPINR0 |= (22 << 8), sets INT1 to RP22 / D13
-    RPINR1bits.INT2R = 23; // equivalent to RPINR1 |= (3 << 8), sets INT2 to RP3 / D12
+    RPINR0bits.INT1R = 4; // sets INT1 to RP4 / D8
     __builtin_write_OSCCONL(OSCCON|0x40);
 
     INTCON2bits.INT1EP = 0; // interrupt 1 fires on neg edge
     IFS1bits.INT1IF = 0; // disable interrupt 1 flag
     IEC1bits.INT1IE = 1; // enable external interrupt 1
-
-    INTCON2bits.INT2EP = 0; // interrupt 2 fires on neg edge
-    IFS1bits.INT2IF = 0; // disable interrupt 2 flag
-    IEC1bits.INT2IE = 1; // enable external interrupt 
 }
 
 // Interrupt handler for INT1
 void __attribute__((interrupt, auto_psv)) _INT1Interrupt(void) {
     IFS1bits.INT1IF = 0; // disable interrupt flag
-    ball_callback(1);
-}
-
-void init_seven_segment(void) {
-    pin_digitalOut(&D[SPI_LOAD]);
-    spi_open(&spi2, &D[SPI_IN], &D[SPI_OUT], &D[SPI_CLK], 10000000.);
-
-    write_data(0x0c,1);           //set mode to normal operation
-    write_data(0x09,0xff);        //set Code B decode for digits 7–0
-    write_data(0x0a,8);           //set intensity register
-    write_data(0x0b,0x07);        //set to display digits 0 to 7
-
-    clear_display();
-
-    timer_start(&timer2);
+    vacuum_callback();
 }
 
 void write_data(uint8_t addr, uint8_t data) {
@@ -220,6 +212,18 @@ void clear_display(void) {
     }
 }
 
+void init_seven_segment(void) {
+    pin_digitalOut(&D[SPI_LOAD]);
+    spi_open(&spi2, &D[SPI_IN], &D[SPI_OUT], &D[SPI_CLK], 10000000.);
+
+    write_data(0x0c,1);           //set mode to normal operation
+    write_data(0x09,0xff);        //set Code B decode for digits 7–0
+    write_data(0x0a,8);           //set intensity register
+    write_data(0x0b,0x07);        //set to display digits 0 to 7
+
+    clear_display();
+}
+
 void display_best_score(uint16_t score) {
     for (int i = 5; i < 9; i++) {
         uint8_t digit = score % 10;
@@ -231,12 +235,17 @@ void display_best_score(uint16_t score) {
     }
 }
 
-uint8_t time_passed = 0;
+uint16_t time_passed = 0;
+
+uint16_t get_time(void) {
+    return time_passed;
+}
 
 void display_elapsed_time(_TIMER *self) {
     led_toggle(&led1);
 
-    uint8_t sampled_time = time_passed;
+    time_passed++;
+    uint16_t sampled_time = time_passed;
 
     for (int i = 1; i < 5; i++) {
         uint8_t digit = sampled_time % 10;
@@ -244,8 +253,6 @@ void display_elapsed_time(_TIMER *self) {
 
         write_data(i,digit);
     }
-
-    time_passed++;
 }
 
 #endif
