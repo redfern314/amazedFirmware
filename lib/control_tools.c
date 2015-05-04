@@ -82,8 +82,8 @@ int get_y() {
 
 uint16_t get_z() {
     uint16_t z = PotTracker.z_accumulator;
-    uint16_t val = (z/67.0)*Z_STEP_SIZE; // be careful here - division in an interrupt!
-    // printf("%u %u %u\n",z,(z>>6),val);
+    uint16_t val = (z / 67.0) * Z_STEP_SIZE; // be careful here - division in an interrupt!
+    // printf("Z: %u\tServo val: %u\n", z, val);
     return val;
 }
 

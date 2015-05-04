@@ -23,7 +23,7 @@ extern _PIN *LIMIT_Y_FRONT_PIN, *LIMIT_Y_BACK_PIN, *RELAY_PIN;
 #define TRACK_POT_FREQ      50  // 100 Hz.
 #define JOYSTICK_MIN        800  // Analog voltage
 #define JOYSTICK_MAX        900  // Analog voltage
-#define JOYSTICK_MID        870  // Analog voltage
+#define JOYSTICK_MID        865  // Analog voltage
 #define JOYSTICK_TOL        10   // Analog voltage
 #define JOYSTICK_ALPHA      4    // Part of an exponential moving average
                                  // http://stackoverflow.com/a/10990656
@@ -62,9 +62,9 @@ typedef struct _COIN_TRACKER {
 } _COIN_TRACKER;
 
 // Ball tracker
-#define WIN_BALL_PIN        0   // ANALOG pin for polling
-#define WIN_DIODE_LEVEL     775 // Analog voltage to trigger for ball crossing
-#define LOSE_BALL_PIN       1   // ANALOG pin for polling
+#define WIN_BALL_PIN        1   // ANALOG pin for polling
+#define WIN_DIODE_LEVEL     600 // Analog voltage to trigger for ball crossing
+#define LOSE_BALL_PIN       0   // ANALOG pin for polling
 #define LOSE_DIODE_LEVEL    500 // Analog voltage to trigger for ball crossing
 
 // Coin tracker
