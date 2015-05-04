@@ -237,6 +237,10 @@ void display_best_score(uint16_t score) {
 
 uint16_t time_passed = 0;
 
+void reset_time(void) {
+    time_passed = 0;
+}
+
 uint16_t get_time(void) {
     return time_passed;
 }
@@ -252,6 +256,10 @@ void display_elapsed_time(_TIMER *self) {
         sampled_time = sampled_time / 10;
 
         write_data(i,digit);
+    }
+
+    if (time_passed > 999) {
+        ball_callback(0);
     }
 }
 

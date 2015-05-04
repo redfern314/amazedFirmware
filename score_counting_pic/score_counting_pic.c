@@ -10,13 +10,11 @@
 #include "spi.h"
 #include <stdio.h>
 
-uint16_t best_score = 400;
+uint16_t best_score = 0;
 int won = 0;
 int lost = 0;
 
 void start_game(void) {
-    won = 0;
-    lost = 0;
     pin_set(&D[SCORE_START_STOP_PIN]);
     led_on(&led3);
 }
@@ -28,6 +26,10 @@ void end_game(int win) {
     timer_setPeriod(&timer2, 0.6);
     timer_start(&timer2);
     if (win) {
+        uint16_t score = 1000 - get_time();
+        if (score > best_score) {
+            best_score = score;
+        }
         won = 1;
     } else {
         lost = 1;
@@ -35,7 +37,12 @@ void end_game(int win) {
 }
 
 void start_seven_segment(void) {
+    won = 0;
+    lost = 0;
+    
+    reset_time();
     write_data(0x09,0xff); 
+    display_best_score(best_score);
     timer_every(&timer1,.12,display_elapsed_time);
 }
 
@@ -81,7 +88,7 @@ int16_t main(void) {
                     write_data(1,31);       //b 
                 } else {
                     write_data(0x09,0xff); 
-                    uint16_t score = get_time(); 
+                    uint16_t score = 1000 - get_time(); 
                     for (int i = 1; i < 5; i++) {
                         uint8_t digit = score % 10;
                         score = score / 10;
