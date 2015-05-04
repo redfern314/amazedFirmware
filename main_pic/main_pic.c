@@ -20,8 +20,8 @@
 #define false                   0
 
 #define X_MOTOR_TRISTATE        8
-#define X_MOTOR_A_PIN           9
-#define X_MOTOR_B_PIN           10
+#define X_MOTOR_A_PIN           10
+#define X_MOTOR_B_PIN           9
 #define Y_MOTOR_TRISTATE        11
 #define Y_MOTOR_A_PIN           12
 #define Y_MOTOR_B_PIN           13
