@@ -72,15 +72,23 @@ typedef struct _COIN_TRACKER {
 #define TRACK_COIN_FREQ     20   // 20 Hz. Too fast gives false positives
 #define COIN_VOLTAGE_LEVEL  40   // Voltage level that indicates coin
 
+// Vacuum tracker
+#define VACUUM_READ_PIN     8   // Digital pin 
+
 // 7 segment
-#define SPI_IN              1    // Pin for digit1
-#define SPI_OUT             2    // Pin for digit2
-#define SPI_CLK             3    // Pin for digit3
+#define SPI_IN              1    // Output from driver
+#define SPI_OUT             2    // Input to driver
+#define SPI_CLK             3    // Clock to driver
+#define SPI_LOAD            4    // Load to driver
 
 void init_coin_tracking(void (*callback)(void));
 void init_ball_tracking(void (*callback)(int));
 void track_balls();
 void init_seven_segment();
+void write_data(uint8_t,uint8_t);
+void clear_display();
+void display_best_score(uint16_t);
+uint16_t get_time();
 void display_elapsed_time();
 #endif
 

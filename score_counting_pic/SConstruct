@@ -9,10 +9,11 @@ file_to_run = 'score_counting_pic'
 
 
 def setup_PIC_env():
-  env = Environment(PIC = '24FJ128GB206', 
+  env = Environment(tools = ['gcc', 'gnulink', 'ar', 'zip'], 
+                    PIC = '24FJ128GB206', 
                     CC = 'xc16-gcc', 
                     PROGSUFFIX = '.cof', 
-                    CFLAGS = '-D SCORE_PIC -g -omf=coff -x c -mcpu=$PIC', 
+                    CFLAGS = '-D SCORE_PIC -std=c99 -g -omf=coff -x c -mcpu=$PIC', 
                     LINKFLAGS = '-omf=coff -mcpu=$PIC -Wl,--script="app_p24FJ128GB206.gld"', 
                     CPPPATH = '../lib')
   
