@@ -111,17 +111,8 @@ void zeroAxes() {
     // Go to hardcoded Z value
     pin_write(&D[Z_MOTOR_PIN], 6 * Z_STEP_SIZE);
 
-    // Drive X to limit
-    pin_write(&D[X_MOTOR_TRISTATE], 750 << 6);
-    pin_set(&D[X_MOTOR_A_PIN]);
-    pin_clear(&D[X_MOTOR_B_PIN]);
-    while (!pin_read(&D[LIMIT_X_RIGHT_PIN])) {
-        // printf("X right limit switch: %d\n", pin_read(&D[LIMIT_X_RIGHT_PIN]));
-    }
-    pin_clear(&D[X_MOTOR_A_PIN]);
-
     // // Drive Y to limit
-    pin_write(&D[Y_MOTOR_TRISTATE], 700 << 6);
+    pin_write(&D[Y_MOTOR_TRISTATE], 860 << 6);
     pin_set(&D[Y_MOTOR_A_PIN]);
     pin_clear(&D[Y_MOTOR_B_PIN]);
     while (!pin_read(LIMIT_Y_FRONT_PIN)) {
