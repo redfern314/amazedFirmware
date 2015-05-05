@@ -142,6 +142,9 @@ void __attribute__((interrupt, auto_psv)) _INT0Interrupt(void) {
 
 int last_win_value;
 int last_lose_value;
+int numwins;
+int numloses;
+int vacuumOn;
 
 // Ball tracker callback
 void (*ball_callback)(int);
@@ -152,27 +155,41 @@ void init_ball_tracking(void (*callback)(int)) {
     pin_analogIn(&A[LOSE_BALL_PIN]);
     last_win_value = 0;
     last_lose_value = 0;
+    numwins = 0;
+    numloses = 0;
+    vacuumOn = 1; // CHANGE THIS TO 0 WHEN VACUUM LINE IS ATTACHED
     timer_every(&timer3, 0.01, track_balls);
 }
 
 void track_balls() {
-    int raw_win_value = pin_read(&A[WIN_BALL_PIN]) >> 6;
-    int raw_lose_value = pin_read(&A[LOSE_BALL_PIN]) >> 6;
-    if (raw_win_value > WIN_DIODE_LEVEL) {
-        if (!last_win_value) {
-            ball_callback(1);
-            last_win_value = 1;
+    if (vacuumOn) {
+        int raw_win_value = pin_read(&A[WIN_BALL_PIN]) >> 6;
+        int raw_lose_value = pin_read(&A[LOSE_BALL_PIN]) >> 6;
+        printf("Regular lose value: %i\n",raw_lose_value);
+        if (raw_win_value > WIN_DIODE_LEVEL) {
+            numwins++;
+            if (!last_win_value && numwins > DIODE_FILTER_THRESH) {
+                printf("Raw Win Value: %i",raw_win_value);
+                ball_callback(1);
+                last_win_value = 1;
+                // vacuumOn = 0; // RE-ENABLE THIS WHEN VACUUM LINE IS ATTACHED
+            }
+        } else {
+            last_win_value = 0;
+            numwins = 0;
         }
-    } else {
-        last_win_value = 0;
-    }
-    if (raw_lose_value > LOSE_DIODE_LEVEL) {
-        if (!last_lose_value) {
-            ball_callback(0);
-            last_lose_value = 1;
+        if (raw_lose_value > LOSE_DIODE_LEVEL) {
+            numloses++;
+            if (!last_lose_value && numloses > DIODE_FILTER_THRESH) {
+                printf("Raw Lose Value: %i",raw_lose_value);
+                ball_callback(0);
+                last_lose_value = 1;
+                // vacuumOn = 0; // RE-ENABLE THIS WHEN VACUUM LINE IS ATTACHED
+            }
+        } else {
+            last_lose_value = 0;
+            numloses = 0;
         }
-    } else {
-        last_lose_value = 0;
     }
 }
 
@@ -196,6 +213,8 @@ void init_vacuum_tracking(void (*callback)(void)) {
 // Interrupt handler for INT1
 void __attribute__((interrupt, auto_psv)) _INT1Interrupt(void) {
     IFS1bits.INT1IF = 0; // disable interrupt flag
+    vacuumOn = 1;
+    printf("Vacuum On!\n");
     vacuum_callback();
 }
 
