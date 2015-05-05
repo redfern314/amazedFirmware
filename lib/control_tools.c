@@ -157,7 +157,7 @@ void init_ball_tracking(void (*callback)(int)) {
     last_lose_value = 0;
     numwins = 0;
     numloses = 0;
-    vacuumOn = 1; // CHANGE THIS TO 0 WHEN VACUUM LINE IS ATTACHED
+    vacuumOn = 0;
     timer_every(&timer3, 0.01, track_balls);
 }
 
@@ -165,14 +165,12 @@ void track_balls() {
     if (vacuumOn) {
         int raw_win_value = pin_read(&A[WIN_BALL_PIN]) >> 6;
         int raw_lose_value = pin_read(&A[LOSE_BALL_PIN]) >> 6;
-        printf("Regular lose value: %i\n",raw_lose_value);
         if (raw_win_value > WIN_DIODE_LEVEL) {
             numwins++;
             if (!last_win_value && numwins > DIODE_FILTER_THRESH) {
-                printf("Raw Win Value: %i",raw_win_value);
                 ball_callback(1);
                 last_win_value = 1;
-                // vacuumOn = 0; // RE-ENABLE THIS WHEN VACUUM LINE IS ATTACHED
+                vacuumOn = 0;
             }
         } else {
             last_win_value = 0;
@@ -181,10 +179,9 @@ void track_balls() {
         if (raw_lose_value > LOSE_DIODE_LEVEL) {
             numloses++;
             if (!last_lose_value && numloses > DIODE_FILTER_THRESH) {
-                printf("Raw Lose Value: %i",raw_lose_value);
                 ball_callback(0);
                 last_lose_value = 1;
-                // vacuumOn = 0; // RE-ENABLE THIS WHEN VACUUM LINE IS ATTACHED
+                vacuumOn = 0;
             }
         } else {
             last_lose_value = 0;
@@ -205,7 +202,7 @@ void init_vacuum_tracking(void (*callback)(void)) {
     RPINR0bits.INT1R = 4; // sets INT1 to RP4 / D8
     __builtin_write_OSCCONL(OSCCON|0x40);
 
-    INTCON2bits.INT1EP = 0; // interrupt 1 fires on neg edge
+    INTCON2bits.INT1EP = 0; // interrupt 1 fires on pos edge
     IFS1bits.INT1IF = 0; // disable interrupt 1 flag
     IEC1bits.INT1IE = 1; // enable external interrupt 1
 }
